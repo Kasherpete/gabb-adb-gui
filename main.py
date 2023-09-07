@@ -179,6 +179,9 @@ class ConnectionWaiterApp:
         self.adb_status_label = tk.Label(root, text="")
         self.adb_status_label.pack(pady=20)
 
+        self.setup_message = tk.Label(root, text="")
+        self.setup_message.pack(pady=20)
+
         self.progress = ttk.Progressbar(root, orient=tk.HORIZONTAL,
                                length=100, mode='determinate')
         # self.progress.pack(pady=10)
@@ -199,6 +202,8 @@ class ConnectionWaiterApp:
     def wait_for_connection(self):
         self.status_label.config(
             text="Waiting for a connection...\n\nPlease remember to unlock your phone and\naccept all connections.\n\nRestart your phone and follow the online guide for help if you have any problems.")
+
+        self.setup_message.config(text="NOTE: If your phone has not been set up yet, go to the phone app\nand type '*#*#62468#*#*', and press the top button. Read the online guide!")
 
         self.root.after(500, self.update_adb_status)
 
