@@ -5,10 +5,13 @@ from tkinter import ttk
 import adbutils
 import os
 import requests
-import platform
-import time
+# import platform
+# import time
 import threading
 from adbutils._utils import adb_path
+
+
+# platform-dependent variables
 
 platform_home_folder = os.path.expanduser('~')
 print(platform_home_folder)
@@ -20,6 +23,7 @@ platform_apk_folder = f'{platform_home_folder}/.ethos-group/gabb-adb-gui/apk'
 platform_setedit_folder = f'{platform_home_folder}/.ethos-group/gabb-adb-gui/apk/setedit.apk'
 
 
+# create a folder for this. Please find another method for this code
 try:
     os.mkdir(f'{platform_home_folder}/.ethos-group')
 except:
@@ -43,23 +47,27 @@ setedit_exists = os.path.exists(platform_setedit_folder)
 
 def download_setedit():
 
-    if not setedit_exists:
+    if not setedit_exists:  # if it's not already downloaded
         with open(platform_setedit_folder, 'wb') as f:
             f.write(requests.get('https://f-droid.org/repo/io.github.muntashirakon.setedit_8.apk').content)
 
 
 def execute_raw_adb(command: str):
 
+    # input something like 'install-multiple [path]'
     os.system(f'{adb_path()} {command}')
 
 
 def in_setup_mode(device: adbutils.AdbDevice):
 
+    # in maintenance mode?
     print(device.shell('am get-current-user'))
     return not device.shell('am get-current-user') == '0'
 
 
 def system_updates_disabled(device: adbutils.AdbDevice):
+
+    # are system updates disabled. True if disabled.
 
     packages = device.shell('pm list packages -d 2>/dev/null')
 
@@ -68,6 +76,8 @@ def system_updates_disabled(device: adbutils.AdbDevice):
 
 def gabb_updates_disabled(device: adbutils.AdbDevice):
 
+    # same as above with PackageUpdater
+
     packages = device.shell('pm list packages -d 2>/dev/null')
 
     return 'com.gabb.packageupdater' in packages
@@ -75,12 +85,16 @@ def gabb_updates_disabled(device: adbutils.AdbDevice):
 
 def setup_device(device: adbutils.AdbDevice):
 
+    # basic setup
+
     device.shell('pm disable-user com.zte.zdm')
     device.shell('pm disable-user com.gabb.packageupdater')
     device.shell('pm disable-user com.zte.zdmdaemon')
     device.shell('pm grant io.github.muntashirakon.setedit android.permission.WRITE_SECURE_SETTINGS')
     device.shell('settings put global development_settings_enabled 1')
 
+
+# set up client
 
 adb = adbutils.AdbClient(host='127.0.0.1', port=5037)
 for info in adb.list():
@@ -190,7 +204,7 @@ class ConnectionWaiterApp:
 
         #        time.sleep(.5)
 
-        adb.wait_for()
+        adb.wait_for(timeout=10000)  # give the poor kids enough time to find their phone charger!
         self.device_id = adb.device_list()[0].serial
         self.status_label.config(text=f"Connection established")
         self.show_connected_notification()
@@ -215,7 +229,8 @@ class ConnectionWaiterApp:
             self.root.update_idletasks()
 
             self.device.shell('adb shell pm grant io.github.muntashirakon.setedit android.permission.WRITE_SECURE_SETTINGS')
-            self.device.shell('am switch-user 0')
+            self.device.shell('am switch-user 0')  # normal user
+            self.device.shell('pm remove-user 10')  # keep this for now. weird errors keep showing up
 
             messagebox.showinfo("Device Setup", "Please follow these steps:\n\n1. go to to the 'Setedit' app\n\n2. tap the button in the top left, and go to the 'global table'\n\n3. tab 'adb_enabled'\n\n4. type in '1'. CLICK 'OKAY' WHEN YOU ARE DONE.")
 
@@ -223,6 +238,7 @@ class ConnectionWaiterApp:
                 messagebox.showinfo("Device Setup", "Congrats! You are now ready to start hacking your phone.")
 
                 self.should_continue = True
+                setup_device(self.device)
 
             else:
                 messagebox.showinfo("Device Setup", "Oops! You did something wrong. Please exit and try again.")
@@ -231,6 +247,7 @@ class ConnectionWaiterApp:
 
         else:
             self.should_continue = True
+            setup_device(self.device)
 
 
 
