@@ -4,16 +4,82 @@ from tkinter import filedialog
 from tkinter import ttk
 import adbutils
 import os
+import requests
 import platform
 import time
 import threading
 from adbutils._utils import adb_path
 
-# in_setup_mode():
-#    'adb shell am get-current-user'
-# package is disable
-#
-# pm list packages -d 2>/dev/null
+platform_home_folder = os.path.expanduser('~')
+print(platform_home_folder)
+platform_downloads_folder = f'{platform_home_folder}/Downloads'
+platform_ethos_folder = f'{platform_home_folder}/.ethos-group'
+platform_main_folder = f'{platform_home_folder}/.ethos-groups/gabb-adb-gui'
+platform_logs_folder = f'{platform_home_folder}/.ethos-group/gabb-adb-gui/logs'
+platform_apk_folder = f'{platform_home_folder}/.ethos-group/gabb-adb-gui/apk'
+platform_setedit_folder = f'{platform_home_folder}/.ethos-group/gabb-adb-gui/apk/setedit.apk'
+
+
+try:
+    os.mkdir(f'{platform_home_folder}/.ethos-group')
+except:
+    pass
+try:
+    os.mkdir(f'{platform_home_folder}/.ethos-group/gabb-adb-gui')
+except:
+    pass
+try:
+    os.mkdir(f'{platform_home_folder}/.ethos-group/gabb-adb-gui/logs')
+except:
+    pass
+try:
+    os.mkdir(f'{platform_home_folder}/.ethos-group/gabb-adb-gui/apk')
+except:
+    pass
+
+
+setedit_exists = os.path.exists(platform_setedit_folder)
+
+
+def download_setedit():
+
+    if not setedit_exists:
+        with open(platform_setedit_folder, 'wb') as f:
+            f.write(requests.get('https://f-droid.org/repo/io.github.muntashirakon.setedit_8.apk').content)
+
+
+def execute_raw_adb(command: str):
+
+    os.system(f'{adb_path()} {command}')
+
+
+def in_setup_mode(device: adbutils.AdbDevice):
+
+    print(device.shell('am get-current-user'))
+    return not device.shell('am get-current-user') == '0'
+
+
+def system_updates_disabled(device: adbutils.AdbDevice):
+
+    packages = device.shell('pm list packages -d 2>/dev/null')
+
+    return ('com.zte.zdm' in packages) and ('com.zte.zdmdaemon' in packages)
+
+
+def gabb_updates_disabled(device: adbutils.AdbDevice):
+
+    packages = device.shell('pm list packages -d 2>/dev/null')
+
+    return 'com.gabb.packageupdater' in packages
+
+
+def setup_device(device: adbutils.AdbDevice):
+
+    device.shell('pm disable-user com.zte.zdm')
+    device.shell('pm disable-user com.gabb.packageupdater')
+    device.shell('pm disable-user com.zte.zdmdaemon')
+    device.shell('pm grant io.github.muntashirakon.setedit android.permission.WRITE_SECURE_SETTINGS')
+    device.shell('settings put global development_settings_enabled 1')
 
 
 adb = adbutils.AdbClient(host='127.0.0.1', port=5037)
@@ -42,7 +108,6 @@ class ConnectionWaiterApp:
         self.adb_status_label.config(text=f'Status:\n\n{state}')
 
         self.root.after(500, self.update_adb_status)
-        print('hi')
 
 
 
@@ -74,6 +139,7 @@ class ConnectionWaiterApp:
         self.server_thread = True
 
         self.device_id = 0
+        self.should_continue = False
 
         # Create a frame for the navigation bar
         nav_bar = tk.Frame(root, height=30, bg="gray")
@@ -98,6 +164,10 @@ class ConnectionWaiterApp:
 
         self.adb_status_label = tk.Label(root, text="")
         self.adb_status_label.pack(pady=20)
+
+        self.progress = ttk.Progressbar(root, orient=tk.HORIZONTAL,
+                               length=100, mode='determinate')
+        # self.progress.pack(pady=10)
 
         # Create a socket server thread
 
@@ -125,8 +195,49 @@ class ConnectionWaiterApp:
         self.status_label.config(text=f"Connection established")
         self.show_connected_notification()
 
+        self.device = adb.device(serial=self.device_id)
+
+        if in_setup_mode(self.device) and messagebox.askyesno("Device Setup","The device is not set up! Would you like to set it up now? (If you click \"no\", you cannot continue.)"):
+
+            self.progress.pack(pady=10)
+
+            self.progress['value'] = 10
+            self.root.update_idletasks()
+
+            download_setedit()
+
+            self.progress['value'] = 40
+            self.root.update_idletasks()
+
+            execute_raw_adb(f'install-multiple {platform_setedit_folder}')
+
+            self.progress['value'] = 80
+            self.root.update_idletasks()
+
+            self.device.shell('adb shell pm grant io.github.muntashirakon.setedit android.permission.WRITE_SECURE_SETTINGS')
+            self.device.shell('am switch-user 0')
+
+            messagebox.showinfo("Device Setup", "Please follow these steps:\n\n1. go to to the 'Setedit' app\n\n2. tap the button in the top left, and go to the 'global table'\n\n3. tab 'adb_enabled'\n\n4. type in '1'. CLICK 'OKAY' WHEN YOU ARE DONE.")
+
+            if not in_setup_mode(self.device) and adb.list()[0].state == 'device':
+                messagebox.showinfo("Device Setup", "Congrats! You are now ready to start hacking your phone.")
+
+                self.should_continue = True
+
+            else:
+                messagebox.showinfo("Device Setup", "Oops! You did something wrong. Please exit and try again.")
+
+
+
+        else:
+            self.should_continue = True
+
+
+
         #        self.server_thread = False
         threading.main_thread().join()
+
+
 
 
 class AdbManagerApp:
@@ -168,7 +279,7 @@ class AdbManagerApp:
         )
 
         # directory_path = ['"' + item + '"' for item in directory_path]
-        directory_path = " ".join(directory_path)
+        # directory_path = " ".join(directory_path)
 
         # Display the selected directory path (you can do something else with it)
         # if directory_path:
@@ -183,12 +294,14 @@ class AdbManagerApp:
             path = adb_path()
 
             self.result_label.config(text="Installing, please wait...")
+            print(f'Executing {directory_path}')
             os.system(f'{path} install-multiple {directory_path}')
+
 
             self.result_label.config(text="APK installed!")
 
         except RuntimeError:
-            print('error')
+            messagebox.showerror("ADB error", "Error: ADB is not installed or packaged!! Message @kasherpete on discord immediately. This is a highly unusual error.")
 
     def center_window(self):
         # Get the screen width and height
@@ -264,7 +377,7 @@ class AdbManagerApp:
         self.adb_status_bar.pack(side="right", padx=10, pady=5)
 
         device_id_bar = tk.Label(top_nav_bar, text=device_id, fg="white", bg="gray")
-        device_id_bar.pack(side="right", padx=10, pady=5)
+        device_id_bar.pack(side="left", padx=10, pady=5)
 
         # Create a ttk Notebook (tabs container)
         main_tab_control = ttk.Notebook(root)
@@ -295,6 +408,8 @@ class AdbManagerApp:
         sub_tab_control.add(subtab_a, text="ADB Control")
         sub_tab_control.add(subtab_b, text="Shell")
 
+        print(in_setup_mode(self.device))
+
         #        self.create_tab(tab_control, "Install apps")
         #        self.create_tab(tab_control, "Advanced")
 
@@ -309,7 +424,7 @@ if __name__ == "__main__":
 
     device_id = app.device_id
 
-    if app.device_id is not None:
+    if app.should_continue:
 
         # device_id = '320525532827'
 
