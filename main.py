@@ -1,97 +1,35 @@
+# import subprocess
 import tkinter as tk
 from tkinter import messagebox
 from tkinter import filedialog
 from tkinter import ttk
 import adbutils
 import os
-import requests
+# import requests
 # import platform
 # import time
+import utils
 import threading
 from adbutils._utils import adb_path
 
 
-# platform-dependent variables
-
-platform_home_folder = os.path.expanduser('~')
-print(platform_home_folder)
-platform_downloads_folder = f'{platform_home_folder}/Downloads'
-platform_ethos_folder = f'{platform_home_folder}/.ethos-group'
-platform_main_folder = f'{platform_home_folder}/.ethos-groups/gabb-adb-gui'
-platform_logs_folder = f'{platform_home_folder}/.ethos-group/gabb-adb-gui/logs'
-platform_apk_folder = f'{platform_home_folder}/.ethos-group/gabb-adb-gui/apk'
-platform_setedit_folder = f'{platform_home_folder}/.ethos-group/gabb-adb-gui/apk/setedit.apk'
-
-
 # create a folder for this. Please find another method for this code
 try:
-    os.mkdir(f'{platform_home_folder}/.ethos-group')
+    os.mkdir(f'{utils.platform_home_folder}/.ethos-group')
 except:
     pass
 try:
-    os.mkdir(f'{platform_home_folder}/.ethos-group/gabb-adb-gui')
+    os.mkdir(f'{utils.platform_home_folder}/.ethos-group/gabb-adb-gui')
 except:
     pass
 try:
-    os.mkdir(f'{platform_home_folder}/.ethos-group/gabb-adb-gui/logs')
+    os.mkdir(f'{utils.platform_home_folder}/.ethos-group/gabb-adb-gui/logs')
 except:
     pass
 try:
-    os.mkdir(f'{platform_home_folder}/.ethos-group/gabb-adb-gui/apk')
+    os.mkdir(f'{utils.platform_home_folder}/.ethos-group/gabb-adb-gui/apk')
 except:
     pass
-
-
-setedit_exists = os.path.exists(platform_setedit_folder)
-
-
-def download_setedit():
-
-    if not setedit_exists:  # if it's not already downloaded
-        with open(platform_setedit_folder, 'wb') as f:
-            f.write(requests.get('https://f-droid.org/repo/io.github.muntashirakon.setedit_8.apk').content)
-
-
-def execute_raw_adb(command: str):
-
-    # input something like 'install-multiple [path]'
-    os.system(f'{adb_path()} {command}')
-
-
-def in_setup_mode(device: adbutils.AdbDevice):
-
-    # in maintenance mode?
-    print(device.shell('am get-current-user'))
-    return not device.shell('am get-current-user') == '0'
-
-
-def system_updates_disabled(device: adbutils.AdbDevice):
-
-    # are system updates disabled. True if disabled.
-
-    packages = device.shell('pm list packages -d 2>/dev/null')
-
-    return ('com.zte.zdm' in packages) and ('com.zte.zdmdaemon' in packages)
-
-
-def gabb_updates_disabled(device: adbutils.AdbDevice):
-
-    # same as above with PackageUpdater
-
-    packages = device.shell('pm list packages -d 2>/dev/null')
-
-    return 'com.gabb.packageupdater' in packages
-
-
-def setup_device(device: adbutils.AdbDevice):
-
-    # basic setup
-
-    device.shell('pm disable-user com.zte.zdm')
-    device.shell('pm disable-user com.gabb.packageupdater')
-    device.shell('pm disable-user com.zte.zdmdaemon')
-    device.shell('pm grant io.github.muntashirakon.setedit android.permission.WRITE_SECURE_SETTINGS')
-    device.shell('settings put global development_settings_enabled 1')
 
 
 # set up client
@@ -123,11 +61,8 @@ class ConnectionWaiterApp:
 
         self.root.after(500, self.update_adb_status)
 
-
-
     def show_connected_notification(self):
         messagebox.showinfo("Phone Connected", "Your Gabb Z2 has been connected!\n\nYou may now close this window.")
-
 
     def center_window(self):
         # Get the screen width and height
@@ -216,19 +151,19 @@ class ConnectionWaiterApp:
 
         self.device = adb.device(serial=self.device_id)
 
-        if in_setup_mode(self.device) and messagebox.askyesno("Device Setup","The device is not set up! Would you like to set it up now? (If you click \"no\", you cannot continue.)"):
+        if utils.in_setup_mode(self.device) and messagebox.askyesno("Device Setup","The device is not set up! Would you like to set it up now? (If you click \"no\", you cannot continue.)"):
 
             self.progress.pack(pady=10)
 
             self.progress['value'] = 10
             self.root.update_idletasks()
 
-            download_setedit()
+            utils.download_apk('setedit')
 
             self.progress['value'] = 40
             self.root.update_idletasks()
 
-            execute_raw_adb(f'install-multiple {platform_setedit_folder}')
+            utils.adb(f'install-multiple {utils.platform_setedit_folder}')
 
             self.progress['value'] = 80
             self.root.update_idletasks()
@@ -239,27 +174,21 @@ class ConnectionWaiterApp:
 
             messagebox.showinfo("Device Setup", "Please follow these steps:\n\n1. go to to the 'Setedit' app\n\n2. tap the button in the top left, and go to the 'global table'\n\n3. tab 'adb_enabled'\n\n4. type in '1'. CLICK 'OKAY' WHEN YOU ARE DONE.")
 
-            if not in_setup_mode(self.device) and adb.list()[0].state == 'device':
+            if not utils.in_setup_mode(self.device) and adb.list()[0].state == 'device':
                 messagebox.showinfo("Device Setup", "Congrats! You are now ready to start hacking your phone.")
 
                 self.should_continue = True
-                setup_device(self.device)
+                utils.setup_device(self.device)
 
             else:
                 messagebox.showinfo("Device Setup", "Oops! You did something wrong. Please exit and try again.")
 
-
-
         else:
             self.should_continue = True
-            setup_device(self.device)
-
-
+            utils.setup_device(self.device)
 
         #        self.server_thread = False
         threading.main_thread().join()
-
-
 
 
 class AdbManagerApp:
@@ -286,7 +215,6 @@ class AdbManagerApp:
         self.adb_status_bar.config(text=f'Status: {state}')
 
         self.root.after(500, self.update_adb_status)
-
 
     def open_directory_dialog(self):
         # Open a directory dialog and get the selected directory path
@@ -318,7 +246,6 @@ class AdbManagerApp:
             self.result_label.config(text="Installing, please wait...")
             print(f'Executing {directory_path}')
             os.system(f'{path} install-multiple {directory_path}')
-
 
             self.result_label.config(text="APK installed!")
 
@@ -352,6 +279,61 @@ class AdbManagerApp:
 
         # Add more widgets and elements specific to the Setup tab here
 
+    def create_tab_advanced(self, tab):
+
+        sub_tab_control = ttk.Notebook(tab)
+        sub_tab_control.pack(fill="both", expand=True)
+
+        subtab_a = ttk.Frame(sub_tab_control)
+        subtab_b = ttk.Frame(sub_tab_control)
+        subtab_c = ttk.Frame(sub_tab_control)
+        subtab_d = ttk.Frame(sub_tab_control)
+        subtab_e = ttk.Frame(sub_tab_control)
+        sub_tab_control.add(subtab_a, text="ADB Control")
+        sub_tab_control.add(subtab_b, text="Shell")
+        sub_tab_control.add(subtab_c, text="Sys Info")
+        sub_tab_control.add(subtab_d, text="Sys Control")
+        sub_tab_control.add(subtab_e, text="Debug")
+
+
+        self.adb_text_widget = tk.Text(subtab_a, wrap=tk.WORD, height=5, width=30)
+        self.adb_text_widget.pack(pady=10)
+
+        update_button = tk.Button(subtab_a, text="Send to device", command=self.send_adb_command_widget)
+        update_button.pack()
+
+        self.adb_output_widget = tk.Text(subtab_a, wrap=tk.WORD, state="disabled", height=10, width=40)
+        self.adb_output_widget.pack(padx=10, pady=10, fill=tk.BOTH, expand=True)
+
+        self.shell_text_widget = tk.Text(subtab_b, wrap=tk.WORD, height=5, width=30)
+        self.shell_text_widget.pack(pady=10)
+
+        update_button = tk.Button(subtab_b, text="Send to device", command=self.send_shell_command_widget)
+        update_button.pack()
+
+        self.shell_output_widget = tk.Text(subtab_b, wrap=tk.WORD, state="disabled", height=10, width=40)
+        self.shell_output_widget.pack(padx=10, pady=10, fill=tk.BOTH, expand=True)
+
+    def create_tab_other(self, tab):
+
+        sub_tab_control = ttk.Notebook(tab)
+        sub_tab_control.pack(fill="both", expand=True)
+
+        subtab_a = ttk.Frame(sub_tab_control)
+        subtab_c = ttk.Frame(sub_tab_control)
+        subtab_d = ttk.Frame(sub_tab_control)
+        subtab_b = ttk.Frame(sub_tab_control)
+
+        sub_tab_control.add(subtab_a, text="Record")
+        sub_tab_control.add(subtab_c, text="Message")
+        sub_tab_control.add(subtab_d, text="Connect Keyboard")
+        sub_tab_control.add(subtab_b, text="Credits")
+
+    def create_tab_status(self, tab):
+
+        button = tk.Button(tab, text="Power Off", command=self.device.shell('reboot -p'))
+        button.pack()
+
     def create_tab_install(self, tab):
         # Create custom content for the Install apps tab
         open_button = tk.Button(tab, text="Open Directory", command=self.open_directory_dialog)
@@ -360,14 +342,40 @@ class AdbManagerApp:
         self.result_label = tk.Label(tab, text="")
         self.result_label.pack()
 
-        # Add more widgets and elements specific to the Install apps tab here
+        # Add more widgets and elements specific to the install apps tab here
 
-    def create_advanced_tab(self, tab):
-        # Create custom content for the Advanced tab
-        label = ttk.Label(tab, text="This is the Advanced tab.")
-        label.pack(padx=20, pady=20)
+    # def create_advanced_tab(self, tab):
+    #     # Create custom content for the Advanced tab
+    #     label = ttk.Label(tab, text="This is the Advanced tab.")
+    #     label.pack(padx=20, pady=20)
 
         # Add more widgets and elements specific to the Advanced tab here
+
+    def send_adb_command_widget(self):
+        text = self.adb_text_widget.get(1.0, tk.END)
+
+        # Update the Label widget with the read-only text
+        output = utils.adb(text)
+        self.adb_output_widget.configure(state="normal")  # Enable editing temporarily
+        self.adb_output_widget.delete("1.0", "end")
+        self.adb_output_widget.insert("1.0", output)  # Insert text
+        self.adb_output_widget.configure(state="disabled")  # Disable editing again
+
+    def send_shell_command_widget(self):
+        text = self.shell_text_widget.get(1.0, tk.END)
+
+        # Update the Label widget with the read-only text
+        output = self.device.shell(text)
+
+        self.shell_output_widget.configure(state="normal")  # Enable editing temporarily
+        self.shell_output_widget.delete("1.0", "end")
+        self.shell_output_widget.insert("1.0", output)  # Insert text
+        self.shell_output_widget.configure(state="disabled")  # Disable editing again
+
+    def create_tab_updates(self, tab):
+
+        label = tk.Label(tab, text="Software updates. ")
+        label.pack(pady=10)
 
     def __init__(self, root, device_id):
         self.root = root
@@ -408,34 +416,40 @@ class AdbManagerApp:
         # Create and add tabs
         #        self.create_tab(tab_control, "Setup")
         tab1 = ttk.Frame(main_tab_control)
-        main_tab_control.add(tab1, text="Setup")
+        main_tab_control.add(tab1, text="Status")
+        self.create_tab_status(tab1)
 
         tab2 = ttk.Frame(main_tab_control)
         main_tab_control.add(tab2, text="Install Apps")
         self.create_tab_install(tab2)
 
+        tab1 = ttk.Frame(main_tab_control)
+        main_tab_control.add(tab1, text="Updates")
+        self.create_tab_updates(tab1)
+
+        tab3 = ttk.Frame(main_tab_control)
+        main_tab_control.add(tab3, text="Other")
+        self.create_tab_other(tab3)
+
         tab3 = ttk.Frame(main_tab_control)
         main_tab_control.add(tab3, text="Advanced")
+        self.create_tab_advanced(tab3)
 
         # self.status_label = tk.Label(root, text="Top Right Text", bg="red", fg="white")
 
         # Place the label in the top right corner (adjust coordinates as needed)
         # self.status_label.place(x=400, y=0)
 
-        sub_tab_control = ttk.Notebook(tab3)
-        sub_tab_control.pack(fill="both", expand=True)
+        tab1 = ttk.Frame(main_tab_control)
+        main_tab_control.add(tab1, text="Help")
 
-        subtab_a = ttk.Frame(sub_tab_control)
-        subtab_b = ttk.Frame(sub_tab_control)
-        sub_tab_control.add(subtab_a, text="ADB Control")
-        sub_tab_control.add(subtab_b, text="Shell")
-
-        print(in_setup_mode(self.device))
+        print(utils.in_setup_mode(self.device))
 
         #        self.create_tab(tab_control, "Install apps")
         #        self.create_tab(tab_control, "Advanced")
 
         # Pack the tab control to make it visible
+
         main_tab_control.pack(fill="both", expand=True)
 
 
