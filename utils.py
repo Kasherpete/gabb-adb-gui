@@ -62,11 +62,11 @@ def get_device_dumpsys(device: AdbDevice, service: str):
 
 
     if service == 'battery':
-        output = device.shell(f'dumpsys {service}')
+        output = device.shell(f'dumpsys {service}').split('\n')
 
         return {'is_charging': bool(output[2].split(': ')[1]) or bool(output[2].split(': ')[2]),
-                'level': output[10].split(': ')[0] + '%',
-                'voltage': output[12].split(': ')[0] + 'mV',
+                'percent': output[10].split(': ')[1] + '%',
+                'voltage': output[12].split(': ')[1] + 'mV',
                 }
     if service == 'cpuinfo':
         output = device.shell(f'dumpsys {service}')

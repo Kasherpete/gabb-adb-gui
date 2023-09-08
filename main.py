@@ -8,9 +8,18 @@ import os
 # import requests
 # import platform
 # import time
+import sys
 import utils
 import threading
 from adbutils._utils import adb_path
+
+
+# def custom_exception_handler(exctype, value, traceback):
+#     print(f"An unhandled exception of type {exctype.__name__} occurred: {value}")
+#     messagebox.showerror('Fatal Error', 'Error: An uncaught error has occurred. This is most likely due to the device being disconnected.')
+#
+#
+# sys.excepthook = custom_exception_handler
 
 
 # create a folder for this. Please find another method for this code
@@ -331,8 +340,106 @@ class AdbManagerApp:
 
     def create_tab_status(self, tab):
 
-        button = tk.Button(tab, text="Power Off", command=self.device.shell('reboot -p'))
-        button.pack()
+        # button = tk.Button(tab, text="Power Off", command=self.device.shell('reboot -p'))
+        # button.pack()
+
+        def power_off():
+            self.device.shell('reboot -p')
+
+        def reboot():
+            self.device.shell('reboot')
+
+        def toggle_screen():
+            self.device.shell('input keyevent KEYCODE_POWER')
+
+        frame = tk.Frame(tab, pady=20)
+        frame.pack()
+
+        # Create two buttons and pack them side by side
+        button1 = tk.Button(frame, text="Turn Off Device", command=power_off)
+        button1.pack(side="left", padx=10)
+
+        button2 = tk.Button(frame, text="Reboot Device", command=reboot)
+        button2.pack(side="left", padx=10)
+
+        button2 = tk.Button(frame, text="Toggle Screen", command=toggle_screen)
+        button2.pack(side="left", padx=10)
+
+        frame = ttk.Frame(tab)
+        frame.pack(pady=10)
+
+        label = ttk.Label(frame, text="Battery Percent")
+        label.grid(row=0, column=0, padx=10, sticky="e")
+
+        # Create a separator (a horizontal line)
+        separator = ttk.Separator(frame, orient="horizontal")
+        separator.grid(row=0, column=1, sticky="ew")
+
+        # Create the second label
+        self.status_battery_percent = ttk.Label(frame, text="")
+        self.status_battery_percent.grid(row=0, column=2, padx=10, sticky="w")
+
+        label = ttk.Label(frame, text="Battery is charging")
+        label.grid(row=1, column=0, padx=10, sticky="e")
+
+        # Create a separator (a horizontal line)
+        separator = ttk.Separator(frame, orient="horizontal")
+        separator.grid(row=1, column=1, sticky="ew")
+
+        # Create the second label
+        self.status_battery_charging = ttk.Label(frame, text="")
+        self.status_battery_charging.grid(row=1, column=2, padx=10, sticky="w")
+
+        label = ttk.Label(frame, text="Screen on")
+        label.grid(row=2, column=0, padx=10, sticky="e")
+
+        # Create a separator (a horizontal line)
+        separator = ttk.Separator(frame, orient="horizontal")
+        separator.grid(row=2, column=1, sticky="ew")
+
+        # Create the second label
+        self.status_screen_on = ttk.Label(frame, text="")
+        self.status_screen_on.grid(row=2, column=2, padx=10, sticky="w")
+
+        label = ttk.Label(frame, text="Screen locked")
+        label.grid(row=3, column=0, padx=10, sticky="e")
+
+        # Create a separator (a horizontal line)
+        separator = ttk.Separator(frame, orient="horizontal")
+        separator.grid(row=3, column=1, sticky="ew")
+
+        # Create the second label
+        self.status_screen_locked = ttk.Label(frame, text="")
+        self.status_screen_locked.grid(row=3, column=2, padx=10, sticky="w")
+
+        label = ttk.Label(frame, text="Time since boot")
+        label.grid(row=4, column=0, padx=10, sticky="e")
+
+        # Create a separator (a horizontal line)
+        separator = ttk.Separator(frame, orient="horizontal")
+        separator.grid(row=4, column=1, sticky="ew")
+        separator = ttk.Separator(frame, orient="horizontal")
+        separator.grid(row=4, column=1, padx=10, sticky="ew")
+
+        # Create the second label
+        self.status_time_boot = ttk.Label(frame, text="")
+        self.status_time_boot.grid(row=4, column=2, padx=10, sticky="w")
+
+    def update_status_tab(self):
+
+        battery_status = utils.get_device_dumpsys(self.device, 'battery')
+        screen_status = utils.get_device_dumpsys(self.device, 'poweron')
+        cpu_status = utils.get_device_dumpsys(self.device, 'cpuinfo')
+        uptime_status = utils.get_device_dumpsys(self.device, 'uptime')
+
+        self.status_battery_percent.config(text=battery_status['percent'])
+        self.status_battery_charging.config(text=str(battery_status['is_charging']))
+        self.status_screen_on.config(text=str(screen_status['screen_on']))
+        self.status_screen_locked.config(text=str(screen_status['screen_locked']))
+        self.status_time_boot.config(text=uptime_status)
+
+        self.root.after(1000, self.update_status_tab)
+
 
     def create_tab_install(self, tab):
         # Create custom content for the Install apps tab
@@ -451,6 +558,7 @@ class AdbManagerApp:
         # Pack the tab control to make it visible
 
         main_tab_control.pack(fill="both", expand=True)
+        self.root.after(1000, self.update_status_tab)
 
 
 if __name__ == "__main__":
@@ -459,10 +567,12 @@ if __name__ == "__main__":
     root.mainloop()
 
     device_id = app.device_id
+    should_continue = app.should_continue
 
-    if app.should_continue:
+    # should_continue = True
+    # device_id = '320525532827'
 
-        # device_id = '320525532827'
+    if should_continue:
 
         root = tk.Tk()
         app = AdbManagerApp(root, device_id)
