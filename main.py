@@ -443,13 +443,105 @@ class AdbManagerApp:
 
     def create_tab_install(self, tab):
         # Create custom content for the Install apps tab
-        open_button = tk.Button(tab, text="Open Directory", command=self.open_directory_dialog)
+        open_button = tk.Button(tab, text="Install APK", command=self.open_directory_dialog)
         open_button.pack(pady=20)
 
         self.result_label = tk.Label(tab, text="")
         self.result_label.pack()
 
-        # Add more widgets and elements specific to the install apps tab here
+        self.result_label = tk.Label(tab, text="Installed apps:")
+        self.result_label.pack()
+
+        adb_output_widget = tk.Text(tab, wrap='none', height=5, width=30)
+        adb_output_widget.insert(tk.END, "\n".join(utils.get_installed_apps(self.device, third_party=True, enabled_only=True)))
+        adb_output_widget.config(state='disabled')
+        adb_output_widget.pack(padx=10, pady=10)
+
+        open_button = tk.Button(tab, text="Uninstall app", command=self.uninstall_app_dialog)
+        open_button.pack(pady=10)
+
+        open_button = tk.Button(tab, text="Enable apps", command=self.enable_app_dialog)
+        open_button.pack(pady=7)
+
+    def uninstall_app_dialog(self):
+
+        window = tk.Toplevel(self.root)  # Create a new Toplevel window
+        window.title("Uninstallation Wizard")  # Set the title for the second window
+        window.geometry("800x500")
+
+        def get_selected_items():
+
+            selected_items = [listbox.get(index) for index in listbox.curselection()]  # Get the items from indices
+
+            if messagebox.askyesno("Uninstallation Confirmation", "Are you sure you want to uninstall these apps? (You can always enable them again later by slecting 'enable apps'.)"):
+
+                for app in selected_items:
+                    self.device.shell(f'pm disable-user {app}')
+                    window.destroy()
+
+        yscrollbar = tk.Scrollbar(window)
+        yscrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+
+        label = tk.Label(window, text="Select apps to uninstall: ", padx=10, pady=10)
+        label.pack()
+
+        listbox = tk.Listbox(window, selectmode="multiple", yscrollcommand=yscrollbar.set, selectbackground="red")
+
+        packages = utils.get_installed_apps(self.device, third_party=True, enabled_only=True)
+
+        for item in packages:
+            listbox.insert(tk.END, item)
+            listbox.itemconfig(tk.END, bg="gray")
+
+        listbox.pack(padx=10, pady=10, expand=tk.YES, fill="both")
+
+        yscrollbar.config(command=listbox.yview)
+
+        # Create a button to capture selected items
+        capture_button = tk.Button(window, text="Uninstall", command=get_selected_items)
+        capture_button.pack(pady=10)
+
+        window.mainloop()
+
+    def enable_app_dialog(self):
+
+        window = tk.Toplevel(self.root)  # Create a new Toplevel window
+        window.title("ReInstallation Wizard")  # Set the title for the second window
+        window.geometry("800x500")
+
+        def get_selected_items():
+
+            selected_items = [listbox.get(index) for index in listbox.curselection()]  # Get the items from indices
+
+            if messagebox.showinfo("ReInstallation Success", "The apps have been enabled successfully."):
+
+                for app in selected_items:
+                    self.device.shell(f'pm enable {app}')
+                    window.destroy()
+
+        yscrollbar = tk.Scrollbar(window)
+        yscrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+
+        label = tk.Label(window, text="Select apps to enable: ", padx=10, pady=10)
+        label.pack()
+
+        listbox = tk.Listbox(window, selectmode="multiple", yscrollcommand=yscrollbar.set, selectbackground="green")
+
+        packages = utils.get_installed_apps(self.device, disabled_only=True)
+
+        for item in packages:
+            listbox.insert(tk.END, item)
+            listbox.itemconfig(tk.END, bg="gray")
+
+        listbox.pack(padx=10, pady=10, expand=tk.YES, fill="both")
+
+        yscrollbar.config(command=listbox.yview)
+
+        # Create a button to capture selected items
+        capture_button = tk.Button(window, text="Renable", command=get_selected_items)
+        capture_button.pack(pady=10)
+
+        window.mainloop()
 
     # def create_advanced_tab(self, tab):
     #     # Create custom content for the Advanced tab
@@ -481,8 +573,72 @@ class AdbManagerApp:
 
     def create_tab_updates(self, tab):
 
-        label = tk.Label(tab, text="Software updates. ")
-        label.pack(pady=10)
+
+
+        def update():
+
+            # global gabb_updates_disabled
+            # global system_updates_disabled
+            print(self.gabb_updates_disabled, self.system_updates_disabled)
+
+            self.gabb_updates_disabled = utils.gabb_updates_disabled(self.device)
+            self.system_updates_disabled = utils.system_updates_disabled(self.device)
+
+            if self.system_updates_disabled and not self.updates_is_unlocked:
+                capture_button.config(text='System Updates Disabled', state='disabled')
+            elif self.system_updates_disabled and self.updates_is_unlocked:
+                capture_button.config(text='Enable System Updates', state='normal')
+            else:
+                capture_button.config(text='Disable System Updates (HIGHLY RECOMMENDED)', state='normal')
+
+            if self.gabb_updates_disabled and not self.updates_is_unlocked:
+                capture_button2.config(text='Gabb Updates Disabled', state='disabled')
+            elif self.gabb_updates_disabled and self.updates_is_unlocked:
+                capture_button2.config(text='Enable PackageUpdater Updates', state='normal')
+            else:
+                capture_button2.config(text='Disable Gabb Updates (HIGHLY RECOMMENDED)', state='normal')
+
+            if self.updates_is_unlocked:
+                button.config(text='Lock')
+            else:
+                button.config(text='Unlock')
+
+        def unlock():
+            if not self.updates_is_unlocked:
+                if messagebox.askyesnocancel('Update Confirmation', 'Are you sure you want to unlock updates?'):
+
+                    self.updates_is_unlocked = True
+                    update()
+            else:
+                self.updates_is_unlocked = False
+                update()
+
+        def gabb_updates():
+            utils.toggle_gabb_updates(self.device, self.gabb_updates_disabled)
+            update()
+
+        def system_updates():
+            utils.toggle_system_updates(self.device, self.system_updates_disabled)
+            update()
+
+        label = tk.Label(tab, text="System Software Updates", padx=10, pady=10)
+        label.pack()
+
+        capture_button = tk.Button(tab, command=system_updates)
+        capture_button.pack(pady=20)
+
+
+        label = tk.Label(tab, text="PackageUpdater Gabb Updates", padx=10, pady=10)
+        label.pack()
+
+        capture_button2 = tk.Button(tab, command=gabb_updates)
+        capture_button2.pack(pady=20)
+
+        button = tk.Button(tab, text='Unlock', command=unlock)
+        button.pack(pady=20)
+
+        update()
+
 
     def __init__(self, root, device_id):
         self.root = root
@@ -494,6 +650,11 @@ class AdbManagerApp:
         # self.root.bind("<Configure>", self.on_resize)
 
         self.device = adb.device(serial=self.device_id)
+        self.gabb_updates_disabled = utils.gabb_updates_disabled(self.device)
+        self.system_updates_disabled = utils.system_updates_disabled(self.device)
+        self.updates_is_unlocked = False
+
+        utils.setup_device(self.device)
 
         self.root.after(500, self.update_adb_status)
 
@@ -577,3 +738,4 @@ if __name__ == "__main__":
         root = tk.Tk()
         app = AdbManagerApp(root, device_id)
         root.mainloop()
+

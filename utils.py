@@ -100,6 +100,24 @@ def get_device_dumpsys(device: AdbDevice, service: str):
         return output.split(' ')[0]
 
 
+def get_installed_apps(device: AdbDevice, third_party: bool = True, disabled_only=False, enabled_only=False):
+
+    output = []
+    arguments = ''
+
+    if third_party:
+        arguments += '-3 '
+    if disabled_only:
+        arguments += '-d '
+    if enabled_only:
+        arguments += '-e '
+
+    for package in device.shell(f'pm list packages {arguments}').split('\n'):
+        output.append(package[8:])
+
+    return output
+
+
 def in_setup_mode(device: AdbDevice):
     # in maintenance mode?
     print(device.shell('am get-current-user'))
@@ -130,3 +148,18 @@ def setup_device(device: AdbDevice):
     device.shell('pm disable-user com.zte.zdmdaemon')
     device.shell('pm grant io.github.muntashirakon.setedit android.permission.WRITE_SECURE_SETTINGS')
     device.shell('settings put global development_settings_enabled 1')
+
+def toggle_system_updates(device: AdbDevice, toggle: bool):
+    if toggle:
+        device.shell('pm enable com.zte.zdmdaemon')
+        device.shell('pm enable com.zte.zdm')
+    else:
+        device.shell('pm disable-user com.zte.zdmdaemon')
+        device.shell('pm disable-user com.zte.zdmn')
+
+
+def toggle_gabb_updates(device: AdbDevice, toggle: bool):
+    if toggle:
+        device.shell('pm enable com.gabb.packageupdater')
+    else:
+        device.shell('pm disable-user com.gabb.packageupdater')
