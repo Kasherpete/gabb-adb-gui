@@ -1,43 +1,31 @@
-# import subprocess
 import tkinter as tk
 from tkinter import messagebox
 from tkinter import filedialog
 from tkinter import ttk
 import adbutils
 import os
-# import requests
-# import platform
-# import time
-import sys
 import utils
 import threading
 from adbutils._utils import adb_path
-import platform
 
-print (platform.system())
-# def custom_exception_handler(exctype, value, traceback):
-#     print(f"An unhandled exception of type {exctype.__name__} occurred: {value}")
-#     messagebox.showerror('Fatal Error', 'Error: An uncaught error has occurred. This is most likely due to the device being disconnected.')
-#
-#
-# sys.excepthook = custom_exception_handler
 
+print(utils.platform)
 
 # create a folder for this. Please find another method for this code
 try:
-    os.mkdir(f'{utils.platform_home_folder}/.ethos-group')
+    os.mkdir(utils.platform_ethos_folder)
 except:
     pass
 try:
-    os.mkdir(f'{utils.platform_home_folder}/.ethos-group/gabb-adb-gui')
+    os.mkdir(utils.platform_main_folder)
 except:
     pass
 try:
-    os.mkdir(f'{utils.platform_home_folder}/.ethos-group/gabb-adb-gui/logs')
+    os.mkdir(utils.platform_logs_folder)
 except:
     pass
 try:
-    os.mkdir(f'{utils.platform_home_folder}/.ethos-group/gabb-adb-gui/apk')
+    os.mkdir(utils.platform_apk_folder)
 except:
     pass
 
@@ -47,13 +35,6 @@ except:
 adb = adbutils.AdbClient(host='127.0.0.1', port=5037)
 for info in adb.list():
     print(info.serial, info.state)
-
-def path_fix(path: str):
-    if platform.system() == 'Windows':
-        print (path.replace('/', '\\'))
-        return '"' + path.replace('/', '\\') + '"'
-    else:
-        return '"' + path + '"'
 
 
 class ConnectionWaiterApp:
@@ -236,7 +217,7 @@ class AdbManagerApp:
     def open_directory_dialog(self):
         # Open a directory dialog and get the selected directory path
 
-        initial_dir = os.path.expanduser("~/Downloads")
+        initial_dir = utils.platform_downloads_folder
 
         directory_path = filedialog.askopenfilename(
             filetypes=[("APK Files", "*.apk")],
@@ -262,7 +243,7 @@ class AdbManagerApp:
 
             self.result_label.config(text="Installing, please wait...")
             print(f'Executing {directory_path}')
-            os.system(f'{path} install-multiple {path_fix(directory_path)}')
+            os.system(f'{path} install-multiple "{directory_path}"')
 
             self.result_label.config(text="APK installed!")
 
@@ -342,9 +323,120 @@ class AdbManagerApp:
         subtab_b = ttk.Frame(sub_tab_control)
 
         sub_tab_control.add(subtab_a, text="Record")
+        self.create_tab_record(subtab_a)
         sub_tab_control.add(subtab_c, text="Message")
+        self.create_tab_message(subtab_c)
         sub_tab_control.add(subtab_d, text="Connect Keyboard")
         sub_tab_control.add(subtab_b, text="Credits")
+
+    def create_tab_message(self, tab):
+
+        def on_focus_in(entry):
+            if entry.cget('state') == 'disabled':
+                entry.configure(state='normal')
+                entry.delete(1.0, 'end')
+
+        def on_focus_out(entry, placeholder):
+
+            if entry.get(index1=1.0).replace('\n', '') == "":
+                entry.insert(1.0, placeholder)
+                entry.configure(state='disabled')
+
+        def send_message(number, message):
+            self.device.shell(f'service call isms 7 i32 0 s16 "com.android.mms.service" s16 "{number}" s16 "null" s16 "{message}" s16 "null" s16 "null"')
+
+        def read_text_boxes():
+            number = entry_x.get("1.0", "end-1c")  # Get content of text box 1
+            message = entry_y.get("1.0", "end-1c")  # Get content of text box 2
+
+            # result_label.config(text=f"Text Box 1: {text_box1_content}\nText Box 2: {text_box2_content}")
+            if (number is not None) and (number != '') and (number != 'Phone number') and (message is not None) and (message != '') and (message != 'Phone number'):
+                send_message(number, message)
+
+                result_label.config(text=f"Message to '{number}' sent!")
+            else:
+                result_label.config(text="Oops! Please include a phone number to send to and a message to send to them.")
+
+        # Create text boxes with different sizes
+        entry_x = tk.Text(tab, height=1, width=13)
+        entry_x.pack(pady=10)
+        entry_x.insert(1.0, "Phone number")
+        entry_x.configure(state='disabled')
+
+        entry_y = tk.Text(tab, height=8, width=35)
+        entry_y.pack(pady=10)
+        entry_y.insert(1.0, "Message")
+        entry_y.configure(state='disabled')
+
+        # text_box1 = tk.Text(tab, height=1, width=13)
+        # text_box1.pack(pady=10, padx=10)
+        #
+        # text_box1.bind("<Button-1>", click)
+        # text_box1.bind("<Leave>", leave)
+        #
+        # text_box2 = tk.Text(tab, height=8, width=35)
+        # text_box2.pack(pady=10, padx=10)
+
+        entry_x.bind('<Button-1>', lambda x: on_focus_in(entry_x))
+        entry_x.bind('<FocusOut>', lambda x: on_focus_out(entry_x, 'Phone number'))
+
+        entry_y.bind('<Button-1>', lambda x: on_focus_in(entry_y))
+        entry_y.bind('<FocusOut>', lambda x: on_focus_out(entry_y, 'Message'))
+
+        # Create a button to read the content of the text boxes
+        read_button = tk.Button(tab, text="Send SMS Message", command=read_text_boxes)
+        read_button.pack(pady=10)
+
+        # Create a label to display the result
+        result_label = tk.Label(tab, text="")
+        result_label.pack()
+
+
+    def create_tab_record(self, tab):
+
+        # def worker_thread():
+        #     self.device.shell('screenrecord /sdcard/record.mp4')
+
+        def stop_recording():
+            # self.device.shell('\x03')
+            self.device.stop_recording()
+
+            start_button.config(text="Start Recording")
+            start_button.config(command=start_recording)
+
+            file = filedialog.asksaveasfile(title='Save file', filetypes=[('Video', 'mp4')], initialfile='record.mp4').name
+
+            os.rename(utils.platform_temporary_video_folder, file)
+
+        def start_recording():
+            # thread = threading.Thread(target=worker_thread)
+            # thread.daemon = True
+            # thread.start()
+            self.device.start_recording(utils.platform_temporary_video_folder)
+
+            start_button.config(text="Stop Recording")
+            start_button.config(command=stop_recording)
+
+        def screenshot():
+            self.device.screenshot().save(fp=filedialog.asksaveasfile(title='Save file', filetypes=[('Picture', 'png')], initialfile='record.png').name)
+
+        label = ttk.Label(tab, text="")
+        label.pack(pady=10)
+
+        label = ttk.Label(tab, text="Record Screen")
+        label.pack()
+
+        start_button = tk.Button(tab, text="Start Recording", command=start_recording)
+        start_button.pack(pady=20)
+
+        label = ttk.Label(tab, text="")
+        label.pack(pady=10)
+
+        label = ttk.Label(tab, text="Screenshot")
+        label.pack()
+
+        start_button = tk.Button(tab, text="Screenshot", command=screenshot)
+        start_button.pack(pady=20)
 
     def create_tab_status(self, tab):
 
@@ -587,7 +679,7 @@ class AdbManagerApp:
 
             # global gabb_updates_disabled
             # global system_updates_disabled
-            print(self.gabb_updates_disabled, self.system_updates_disabled)
+            # print(self.gabb_updates_disabled, self.system_updates_disabled)
 
             self.gabb_updates_disabled = utils.gabb_updates_disabled(self.device)
             self.system_updates_disabled = utils.system_updates_disabled(self.device)
@@ -719,7 +811,7 @@ class AdbManagerApp:
         tab1 = ttk.Frame(main_tab_control)
         main_tab_control.add(tab1, text="Help")
 
-        print(utils.in_setup_mode(self.device))
+        # print(utils.in_setup_mode(self.device))
 
         #        self.create_tab(tab_control, "Install apps")
         #        self.create_tab(tab_control, "Advanced")
@@ -731,15 +823,15 @@ class AdbManagerApp:
 
 
 if __name__ == "__main__":
-    root = tk.Tk()
-    app = ConnectionWaiterApp(root)
-    root.mainloop()
+    # root = tk.Tk()
+    # app = ConnectionWaiterApp(root)
+    # root.mainloop()
+    #
+    # device_id = app.device_id
+    # should_continue = app.should_continue
 
-    device_id = app.device_id
-    should_continue = app.should_continue
-
-    # should_continue = True
-    # device_id = '320525532827'
+    should_continue = True
+    device_id = '320525532827'
 
     if should_continue:
 

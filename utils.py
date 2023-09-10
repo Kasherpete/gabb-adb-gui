@@ -5,14 +5,24 @@ from os.path import expanduser, exists
 from adbutils import AdbDevice
 import platform
 
+
+platform = platform.system()
+
+if platform == 'Windows':
+    v = '\\'
+else:
+    v = '/'
+
 platform_home_folder = expanduser('~')
 print(platform_home_folder)
-platform_downloads_folder = f'{platform_home_folder}/Downloads'
-platform_ethos_folder = f'{platform_home_folder}/.ethos-group'
-platform_main_folder = f'{platform_home_folder}/.ethos-groups/gabb-adb-gui'
-platform_logs_folder = f'{platform_home_folder}/.ethos-group/gabb-adb-gui/logs'
-platform_apk_folder = f'{platform_home_folder}/.ethos-group/gabb-adb-gui/apk'
-platform_setedit_folder = f'{platform_home_folder}/.ethos-group/gabb-adb-gui/apk/setedit.apk'
+platform_downloads_folder = f'{platform_home_folder}{v}Downloads'
+platform_ethos_folder = f'{platform_home_folder}{v}.ethos-group'
+platform_main_folder = f'{platform_home_folder}{v}.ethos-groups{v}gabb-adb-gui'
+platform_logs_folder = f'{platform_home_folder}{v}.ethos-group{v}gabb-adb-gui{v}logs'
+platform_apk_folder = f'{platform_home_folder}{v}.ethos-group{v}gabb-adb-gui{v}apk'
+platform_setedit_folder = f'{platform_home_folder}{v}.ethos-group{v}gabb-adb-gui{v}apk{v}setedit.apk'
+platform_desktop_folder = f'{platform_home_folder}{v}Desktop'
+platform_temporary_video_folder = f'{platform_home_folder}{v}Desktop{v}record.mp4'
 
 
 existing_apks = {
@@ -24,15 +34,18 @@ apks = {
     'setedit': 'https://f-droid.org/repo/io.github.muntashirakon.setedit_8.apk'
 }
 
-def path_fix(path: str):
+
+def path_fix(path: str, add_quotations: bool = False):
+    v = ''
+    if add_quotations:
+        v = '"'
     if platform.system() == 'Windows':
-        print (path.replace('/', '\\'))
-        return '"' + path.replace('/', '\\') + '"'
+        print(path.replace('/', '\\'))
+        return v + path.replace('/', '\\') + v
     else:
-        return '"' + path + '"'
+        return v + path + v
     
 
-    
 def download_apk(apk: str):
 
     if (apks[apk] is not None) and not existing_apks[apk]:  # if valid apk and not downloaded
@@ -52,7 +65,6 @@ def get_running_app(device: AdbDevice):
 def adb(command: str):
     # input something like 'install-multiple [path]'
 
-
     proc = subprocess.Popen([f'{adb_path()} {command}'], stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
     (out, err) = proc.communicate()
 
@@ -68,7 +80,6 @@ def adb(command: str):
 
 
 def get_device_dumpsys(device: AdbDevice, service: str):
-
 
     if service == 'battery':
         output = device.shell(f'dumpsys {service}').split('\n')
@@ -157,6 +168,7 @@ def setup_device(device: AdbDevice):
     device.shell('pm disable-user com.zte.zdmdaemon')
     device.shell('pm grant io.github.muntashirakon.setedit android.permission.WRITE_SECURE_SETTINGS')
     device.shell('settings put global development_settings_enabled 1')
+
 
 def toggle_system_updates(device: AdbDevice, toggle: bool):
     if toggle:
