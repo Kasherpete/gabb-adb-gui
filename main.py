@@ -12,8 +12,9 @@ import sys
 import utils
 import threading
 from adbutils._utils import adb_path
+import platform
 
-
+print (platform.system())
 # def custom_exception_handler(exctype, value, traceback):
 #     print(f"An unhandled exception of type {exctype.__name__} occurred: {value}")
 #     messagebox.showerror('Fatal Error', 'Error: An uncaught error has occurred. This is most likely due to the device being disconnected.')
@@ -46,6 +47,13 @@ except:
 adb = adbutils.AdbClient(host='127.0.0.1', port=5037)
 for info in adb.list():
     print(info.serial, info.state)
+
+def path_fix(path: str):
+    if platform.system() == 'Windows':
+        print (path.replace('/', '\\'))
+        return '"' + path.replace('/', '\\') + '"'
+    else:
+        return '"' + path + '"'
 
 
 class ConnectionWaiterApp:
@@ -248,13 +256,13 @@ class AdbManagerApp:
 
         # self.device.install(directory_path)
         # self.device.adb_output(f'install-multiple {directory_path}')
-
+        
         try:
             path = adb_path()
 
             self.result_label.config(text="Installing, please wait...")
             print(f'Executing {directory_path}')
-            os.system(f'{path} install-multiple {directory_path}')
+            os.system(f'{path} install-multiple {path_fix(directory_path)}')
 
             self.result_label.config(text="APK installed!")
 

@@ -3,7 +3,7 @@ import requests
 from adbutils._utils import adb_path
 from os.path import expanduser, exists
 from adbutils import AdbDevice
-
+import platform
 
 platform_home_folder = expanduser('~')
 print(platform_home_folder)
@@ -24,7 +24,15 @@ apks = {
     'setedit': 'https://f-droid.org/repo/io.github.muntashirakon.setedit_8.apk'
 }
 
+def path_fix(path: str):
+    if platform.system() == 'Windows':
+        print (path.replace('/', '\\'))
+        return '"' + path.replace('/', '\\') + '"'
+    else:
+        return '"' + path + '"'
+    
 
+    
 def download_apk(apk: str):
 
     if (apks[apk] is not None) and not existing_apks[apk]:  # if valid apk and not downloaded
@@ -43,6 +51,7 @@ def get_running_app(device: AdbDevice):
 
 def adb(command: str):
     # input something like 'install-multiple [path]'
+
 
     proc = subprocess.Popen([f'{adb_path()} {command}'], stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
     (out, err) = proc.communicate()
