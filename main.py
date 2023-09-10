@@ -3,6 +3,7 @@ from tkinter import messagebox
 from tkinter import filedialog
 from tkinter import ttk
 import adbutils
+from adbutils import errors
 import os
 import utils
 import threading
@@ -101,8 +102,7 @@ class ConnectionWaiterApp:
         right_label.pack(side="right", padx=10, pady=5)
 
         # Create a label to display the status
-        self.status_label = tk.Label(root,
-                                     text="Please follow the steps on the guide at gabbhackguide.netlify.app,\n connect your phone, and press the button below.")
+        self.status_label = tk.Label(root, text="Please follow the steps on the guide at gabbhackguide.netlify.app,\n connect your phone, and press the button below.")
         self.status_label.pack(pady=20)
 
         # Create a button to start waiting for a connection
@@ -115,8 +115,7 @@ class ConnectionWaiterApp:
         self.setup_message = tk.Label(root, text="")
         self.setup_message.pack(pady=20)
 
-        self.progress = ttk.Progressbar(root, orient=tk.HORIZONTAL,
-                               length=100, mode='determinate')
+        self.progress = ttk.Progressbar(root, orient=tk.HORIZONTAL, length=100, mode='determinate')
         # self.progress.pack(pady=10)
 
         # Create a socket server thread
@@ -133,8 +132,7 @@ class ConnectionWaiterApp:
         self.server_thread.start()
 
     def wait_for_connection(self):
-        self.status_label.config(
-            text="Waiting for a connection...\n\nPlease remember to unlock your phone and\naccept all connections.\n\nRestart your phone and follow the online guide for help if you have any problems.")
+        self.status_label.config(text="Waiting for a connection...\n\nPlease remember to unlock your phone and\naccept all connections.\n\nRestart your phone and follow the online guide for help if you have any problems.")
 
         self.setup_message.config(text="NOTE: If your phone has not been set up yet, go to the phone app\nand type '*#*#62468#*#*', and press the top button. Read the online guide!")
 
@@ -739,8 +737,23 @@ class AdbManagerApp:
 
         update()
 
+    def check_disconnect(self):
+        """Return True if connected"""
+        try:
+            response = self.device.info
+        except errors.AdbError:
+            return False
+        return True
 
-    def __init__(self, root, device_id):
+    def check_disconnect_loop(self):
+        if not self.check_disconnect() and self.device_is_connected:
+            self.device_is_connected = False
+            messagebox.showwarning('Device Disconnected', 'Your device was disconnected.')
+            self.root.destroy()  # remove this line of code to stop the app from closing
+
+        self.root.after(200, self.check_disconnect_loop)
+
+    def __init__(self, root: tk.Tk, device_id):
         self.root = root
         root.minsize(400, 300)
         root.geometry("1000x600")
@@ -753,10 +766,12 @@ class AdbManagerApp:
         self.gabb_updates_disabled = utils.gabb_updates_disabled(self.device)
         self.system_updates_disabled = utils.system_updates_disabled(self.device)
         self.updates_is_unlocked = False
+        self.device_is_connected = self.check_disconnect()
 
         utils.setup_device(self.device)
 
         self.root.after(500, self.update_adb_status)
+        self.root.after(200, self.check_disconnect_loop())
 
         bottom_nav_bar = tk.Frame(root, height=30, bg="gray")
         bottom_nav_bar.pack(side="bottom", fill="x")

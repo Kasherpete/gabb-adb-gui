@@ -40,7 +40,6 @@ def path_fix(path: str, add_quotations: bool = False):
     if add_quotations:
         v = '"'
     if platform.system() == 'Windows':
-        print(path.replace('/', '\\'))
         return v + path.replace('/', '\\') + v
     else:
         return v + path + v
@@ -106,7 +105,6 @@ def get_device_dumpsys(device: AdbDevice, service: str):
 
     if service == 'poweron':
         output1 = True if (device.shell(f'dumpsys deviceidle | grep mScreenLocked').split('=')[1]) == 'true' else False
-        print(device.shell(f'dumpsys deviceidle | grep mScreenOn').split('=')[1].capitalize())
         output2 = True if (device.shell(f'dumpsys deviceidle | grep mScreenOn').split('=')[1]) == 'true' else False
 
         return {
