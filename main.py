@@ -325,7 +325,7 @@ class AppStore:
             if entry['important']:
                 name = '★ ' + name
 
-            desc = utils.insert_newlines(entry['description'], 30)[:59]
+            desc = utils.insert_newlines(entry['description'].replace('\n', ''), 30)[:59]
             if len(desc) >= 59:
                 desc += '...'
             # try:
@@ -1105,15 +1105,15 @@ class AdbManagerApp:
 
 
 if __name__ == "__main__":
-    # root = tk.Tk()
-    # app = ConnectionWaiterApp(root)
-    # root.mainloop()
-    #
-    # device_id = app.device_id
-    # should_continue = app.should_continue
+    root = tk.Tk()
+    app = ConnectionWaiterApp(root)
+    root.mainloop()
 
-    should_continue = True
-    device_id = '320525532827'
+    device_id = app.device_id
+    should_continue = app.should_continue
+
+    # should_continue = True
+    # device_id = '320525532827'
 
     if should_continue:
 
