@@ -11,7 +11,7 @@
   },
   {
     "name": "Gboard",
-    "description": "A better keyboard for Android devices",
+    "description": "Gboard has everything you love about Google Keyboard—speed and reliability, Glide Typing, voice typing, Handwriting, and more\n\nGlide Typing — Type faster by sliding your finger from letter to letter\n\nVoice typing — Easily dictate text on the go\n\nHandwriting* — Write in cursive and printed letters\n\nEmoji Search* — Find that emoji, faster\n\nGIFs* — Search and share GIFs for the perfect reaction.\n\nMultilingual typing — No more switching between languages manually. Gboard will autocorrect and suggest from any of your enabled languages.\n\nGoogle Translate — Translate as you type in the keyboard",
     "version": "13.2.04",
     "code_name": "com.google.android.inputmethod.latin",
     "apk_name": "gboard",
@@ -21,7 +21,7 @@
   },
   {
     "name": "CPL",
-    "description": "A launcher that allows you to hide apps, and looks nicer on the Gabb Phone",
+    "description": "Pixel Launcher is a close to AOSP launcher that only changes the\nnecessary code to allow for small extensions and backporting to older\nAndroid versions. If you want a more feature packed launcher use Nova,\nAction or Lawnchair. Pixel Launcher is focused on simplicity and rock\nsolid stability.\n\nFeatures include:\n\n* Search bar at the bottom\n* Wallpaper based theme selection\n* Regular Icon Packs\n* Adaptive Icon Packs, such as my Google Icons\n* Icon Shape selection on Android 8.0\n\nNOTE: This app allows you to hide apps on the Gabb Phone, it is HIGHLY recommended.",
     "version": "1.15.1",
     "code_name": "ru.whatau.cpl",
     "apk_name": "cpl",
@@ -31,7 +31,7 @@
   },
   {
     "name": "Google Messages",
-    "description": "The best messages app on earth! Create a whole new experience with your phone",
+    "description": "Messages by Google is the official Google app for messaging over Rich Communication Services (RCS) with fallback to SMS/MMS. Get more done in your messages with one-tap calendar reminders and emoji replies, and keep your conversations secure with spam protection and end-to-end encryption so you can focus on connecting with the people and businesses you care about — no matter what device they use.\n",
     "version" : "2023.08.01",
     "code_name": "com.google.android.apps.messaging",
     "apk_name": "messages",
@@ -41,11 +41,21 @@
   },
   {
     "name": "Google Contacts",
-    "description": "Organize your contacts to have the best experience with your phone!",
-    "version": "",
+    "description": "Back up and sync your contacts across all your devices\n\n• Keep your contacts safely backed up to your Google Account\n• Access your contacts from anywhere you’re signed in, including your next phone\n• Recover contacts deleted in the last 30 days from Trash\n\nKeep your contacts organized and up to date",
+    "version": "4.14.23",
     "code_name": "com.google.android.contacts",
     "apk_name": "contacts",
     "image_path": "./images/contacts.png",
+    "url": "https://drive.usercontent.google.com/download?id=1ytRm30PmHvY5jdoP6RogUekTl2CqwDgg&export=download&authuser=0&confirm=t&uuid=a730cc94-cc7a-49a1-a3bf-e706fa665223&at=APZUnTX9jPKOOVJSy9lLth7kfmMq:1694526337272",
+    "important": false
+  },
+    {
+    "name": "Crossy Road",
+    "description": "Join over 200 MILLION players worldwide and experience Hipster Whale's massive viral #1 hit!\n\nSame device multiplayer: Compete against your friends and family on the same device.\n\nPlay Crossy Road on the Big Screen with Android TV!",
+    "version": "5.3.1",
+    "code_name": "com.yodo1.crossyroad",
+    "apk_name": "crossyroad",
+    "image_path": "./images/crossyroad.png",
     "url": "https://drive.usercontent.google.com/download?id=1ytRm30PmHvY5jdoP6RogUekTl2CqwDgg&export=download&authuser=0&confirm=t&uuid=a730cc94-cc7a-49a1-a3bf-e706fa665223&at=APZUnTX9jPKOOVJSy9lLth7kfmMq:1694526337272",
     "important": false
   }

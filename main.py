@@ -3,6 +3,7 @@ import zipfile
 from tkinter import messagebox
 from tkinter import filedialog
 from tkinter import ttk, font
+import pyperclip
 import adbutils
 import requests
 from adbutils import errors
@@ -203,11 +204,16 @@ class AppStore:
 
     def create_info_dialog(self, root, photo, entry):
 
+        def on_resize(event):
+            # This function will be called every time the window is resized
+            info_label.config(wraplength=popup.winfo_width() - 122)
+
         # root.withdraw()
 
         popup = tk.Toplevel(root)
-        popup.title("Popup Window")
-        # popup.geometry("500x350")
+        popup.title(f"{entry['name']} Info")
+        popup.geometry("500x350")
+        popup.bind("<Configure>", on_resize)
 
         title_frame = tk.Frame(popup, bg="#aaa")
         title_frame.pack(fill='x')
@@ -225,11 +231,25 @@ class AppStore:
         image_label.image = photo
         image_label.grid(row=0, column=0, padx=5, pady=5)
 
-        install_button = tk.Button(button_frame, text='Install', bg="#0000ff", fg="#fff", activebackground="#bbb", activeforeground="#000", cursor="hand2")
-        install_button.grid(row=0, column=0, padx=5, pady=5, sticky='n')
+        if not utils.is_installed(self.device, entry['code_name']):
 
-        install_button = tk.Button(button_frame, text='Copy APK\nlink')
-        install_button.grid(row=1, column=0, padx=5, pady=5, sticky='n')
+            install_button = tk.Button(button_frame, text="Install", bg="#0000ff", fg="#fff", activebackground="#bbb",
+                               activeforeground="#000", cursor="hand2", highlightthickness=2,
+                               highlightbackground="#aaa")
+            install_button.grid(row=0, column=0, padx=5, pady=2)
+
+            install_button.bind("<Enter>", self.on_install_button_enter)
+            install_button.bind("<Leave>", self.on_install_button_leave)
+
+            install_button.config(
+                command=lambda x=entry['apk_name'], button=install_button, name=entry['code_name']: self.install_button(x, button, name))
+
+        else:
+            install_button = tk.Button(button_frame, text="Installed", state='disabled', bg='#777')
+            install_button.grid(row=0, column=0, padx=5, pady=2)
+
+        button = tk.Button(button_frame, text='Copy APK\nlink', command=lambda url=entry['url']: pyperclip.copy(url))
+        button.grid(row=1, column=0, padx=5, pady=5, sticky='n')
 
         name_label = tk.Label(title_frame, text=entry["name"], font=font.Font(size=16, weight="bold"), bg='#aaa')
         name_label.grid(row=0, column=1, padx=5, pady=5, sticky='w')
@@ -246,7 +266,6 @@ class AppStore:
 
         if len(version) >= 22:
             version += '...'
-
 
         version_label = tk.Label(button_frame, text=f'v{version}', bg='#aaa')
         version_label.grid(row=2, column=0, padx=5, pady=5, sticky='n')
@@ -280,8 +299,6 @@ class AppStore:
         # Create the main window
         self.root = root
         root.title("Gabb Phone Z2 App Store")
-
-        list1 = []
 
         # Create a function to generate boxes
 
@@ -347,8 +364,6 @@ class AppStore:
                 button = tk.Button(button_frame, text="Installed", state='disabled', bg='#777')
                 button.grid(row=0, column=0, padx=5, pady=2)
 
-            list1.append([root, photo, entry])
-
             info_button = tk.Button(button_frame, text="Info", cursor="hand2", bg="#aaa",
                                     highlightbackground="#aaa",
                                     command=lambda r=root, p=photo, e=entry: self.create_info_dialog(r, p, e))
@@ -358,7 +373,6 @@ class AppStore:
             # version_label.grid(row=1, column=0, padx=5, sticky='w')
 
             # Bind the hover functions to the button
-
 
 
 class AdbManagerApp:
@@ -1091,15 +1105,15 @@ class AdbManagerApp:
 
 
 if __name__ == "__main__":
-    root = tk.Tk()
-    app = ConnectionWaiterApp(root)
-    root.mainloop()
+    # root = tk.Tk()
+    # app = ConnectionWaiterApp(root)
+    # root.mainloop()
+    #
+    # device_id = app.device_id
+    # should_continue = app.should_continue
 
-    device_id = app.device_id
-    should_continue = app.should_continue
-
-    # should_continue = True
-    # device_id = '320525532827'
+    should_continue = True
+    device_id = '320525532827'
 
     if should_continue:
 
