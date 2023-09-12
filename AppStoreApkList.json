@@ -1,0 +1,52 @@
+[
+  {
+    "name": "Minecraft",
+    "description": "Minecraft is a game made from blocks that you can transform into whatever you can imagine. Play in Creative mode with unlimited resources, or hunt for tools to fend off danger in Survival mode.\n\nWith seamless cross-platform play on Minecraft: Bedrock Edition you can adventure solo or with friends, and discover an infinite, randomly generated world filled with blocks to mine, biomes to explore and mobs to befriend (or fight).\n\nThe choice is yours in Minecraft – so play your way!",
+    "version": "1.16.220",
+    "code_name": "com.mojang.minecraftpe",
+    "apk_name": "minecraft",
+    "image_path": "./images/minecraft.png",
+    "url": "https://drive.usercontent.google.com/download?id=1Z--rCNkhaXdBRBnrs2HkT8dMGuTrDbaz&export=download&authuser=0&confirm=t&uuid=32f780b1-8c79-45c2-bfa3-8382ce867343&at=APZUnTWslmCS1vPPLSGSxg8_DJgg:1694482014085",
+    "important": false
+  },
+  {
+    "name": "Gboard",
+    "description": "A better keyboard for Android devices",
+    "version": "13.2.04",
+    "code_name": "com.google.android.inputmethod.latin",
+    "apk_name": "gboard",
+    "image_path": "./images/gboard.png",
+    "url": "https://drive.usercontent.google.com/download?id=11NOHsH_zuISQcGeXDW_1h7NYOsbunakI&export=download&authuser=0&confirm=t&uuid=6f4d1f81-515c-436e-9c85-7a05b910c487&at=APZUnTVwfW5-iAgbWyubJkTPqlkg:1694488640983",
+    "important": false
+  },
+  {
+    "name": "CPL",
+    "description": "A launcher that allows you to hide apps, and looks nicer on the Gabb Phone",
+    "version": "1.15.1",
+    "code_name": "ru.whatau.cpl",
+    "apk_name": "cpl",
+    "image_path": "./images/cpl.png",
+    "url": "https://d.apkpure.com/b/APK/ru.whatau.cpl?version=latest",
+    "important": false
+  },
+  {
+    "name": "Google Messages",
+    "description": "The best messages app on earth! Create a whole new experience with your phone",
+    "version" : "2023.08.01",
+    "code_name": "com.google.android.apps.messaging",
+    "apk_name": "messages",
+    "image_path": "./images/messages.png",
+    "url": "https://drive.usercontent.google.com/download?id=1LViZJMl61c7OXlbVBuJv3T6wOXWS4gl-&export=download&authuser=0&confirm=t&uuid=3c611e82-e93f-4823-9cf4-496bfe04a975&at=APZUnTVqrzbbunOLa0itxtLmxh7W:1694525761058",
+    "important": true
+  },
+  {
+    "name": "Google Contacts",
+    "description": "Organize your contacts to have the best experience with your phone!",
+    "version": "",
+    "code_name": "com.google.android.contacts",
+    "apk_name": "contacts",
+    "image_path": "./images/contacts.png",
+    "url": "https://drive.usercontent.google.com/download?id=1ytRm30PmHvY5jdoP6RogUekTl2CqwDgg&export=download&authuser=0&confirm=t&uuid=a730cc94-cc7a-49a1-a3bf-e706fa665223&at=APZUnTX9jPKOOVJSy9lLth7kfmMq:1694526337272",
+    "important": false
+  }
+]

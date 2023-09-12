@@ -1,13 +1,17 @@
 import tkinter as tk
+import zipfile
 from tkinter import messagebox
 from tkinter import filedialog
-from tkinter import ttk
+from tkinter import ttk, font
 import adbutils
+import requests
 from adbutils import errors
 import os
 import utils
 import threading
 from adbutils._utils import adb_path
+import json
+from PIL import Image, ImageTk
 
 
 print(utils.platform)
@@ -27,6 +31,14 @@ except:
     pass
 try:
     os.mkdir(utils.platform_apk_folder)
+except:
+    pass
+try:
+    os.mkdir(utils.platform_scrcpy_folder)
+except:
+    pass
+try:
+    os.mkdir(utils.platform_scrcpy_extract)
 except:
     pass
 
@@ -187,7 +199,175 @@ class ConnectionWaiterApp:
         threading.main_thread().join()
 
 
+class AppStore:
+
+    def create_info_dialog(self, root, photo, entry):
+
+        # root.withdraw()
+
+        popup = tk.Toplevel(root)
+        popup.title("Popup Window")
+        # popup.geometry("500x350")
+
+        title_frame = tk.Frame(popup, bg="#aaa")
+        title_frame.pack(fill='x')
+
+        main_frame = tk.Frame(popup)
+        main_frame.pack()
+
+        description_frame = tk.Frame(main_frame)
+        description_frame.grid(row=0, column=0, sticky='nw')
+
+        button_frame = tk.Frame(main_frame, bg='#aaa')
+        button_frame.grid(row=0, column=1, sticky='n')
+
+        image_label = ttk.Label(title_frame, image=photo)
+        image_label.image = photo
+        image_label.grid(row=0, column=0, padx=5, pady=5)
+
+        install_button = tk.Button(button_frame, text='Install', bg="#0000ff", fg="#fff", activebackground="#bbb", activeforeground="#000", cursor="hand2")
+        install_button.grid(row=0, column=0, padx=5, pady=5, sticky='n')
+
+        install_button = tk.Button(button_frame, text='Copy APK\nlink')
+        install_button.grid(row=1, column=0, padx=5, pady=5, sticky='n')
+
+        name_label = tk.Label(title_frame, text=entry["name"], font=font.Font(size=16, weight="bold"), bg='#aaa')
+        name_label.grid(row=0, column=1, padx=5, pady=5, sticky='w')
+
+        info_label = tk.Label(description_frame, text=entry['description'], wraplength=300, anchor='w', justify='left')
+        info_label.grid(row=1, column=1, sticky='nw', padx=10, pady=10)
+
+        try:
+            version = entry['version'][:22]
+        except:
+            version = '0'
+
+        version = utils.insert_newlines(version, 11)
+
+        if len(version) >= 22:
+            version += '...'
+
+
+        version_label = tk.Label(button_frame, text=f'v{version}', bg='#aaa')
+        version_label.grid(row=2, column=0, padx=5, pady=5, sticky='n')
+
+    def on_install_button_enter(self, event):
+        event.widget.config(highlightbackground="#0000ff")
+
+    def on_install_button_leave(self, event):
+        event.widget.config(highlightbackground="#aaa")
+
+    def install_button(self, app: str, button: tk.Button, code_name: str):
+
+        def target(app, button, code_name):
+            button.config(text='Downloading...', state='disabled', bg='#777')
+            path = utils.download_apk(app)
+
+            button.config(text='Installing...', state='disabled', bg='#777')
+            utils.install(self.device, path, code_name)
+
+            button.config(text="Installed", state='disabled', bg='#777')
+
+        thread = threading.Thread(target=target, args=(app, button, code_name))
+        thread.daemon = True
+        thread.start()
+
+    def __init__(self, root: tk.Toplevel, device: adbutils.AdbDevice):
+
+        data = json.loads(open('AppStoreApkList.json', 'r').read())
+        self.device = device
+
+        # Create the main window
+        self.root = root
+        root.title("Gabb Phone Z2 App Store")
+
+        list1 = []
+
+        # Create a function to generate boxes
+
+        for row, entry in enumerate(data):
+            # Load image
+            image = Image.open(entry["image_path"])
+            image = image.resize((50, 50))  # Adjust image size as needed
+            photo = ImageTk.PhotoImage(image)
+
+            # Create a frame for each box
+            box_frame = tk.Frame(root, bg="#aaa")
+            box_frame.grid(row=row // 3, column=row % 3, padx=10, pady=10)
+
+            # Display image on the left
+            image_label = ttk.Label(box_frame, image=photo)
+            image_label.image = photo
+            image_label.grid(row=0, column=0, padx=5, pady=5)
+
+            text_frame = tk.Frame(box_frame, bg="#aaa")
+            text_frame.grid(row=0, column=1, padx=0, pady=0, sticky="w")
+
+            name = entry['name']
+
+            if entry['important']:
+                name = '★ ' + name
+
+            desc = utils.insert_newlines(entry['description'], 30)[:59]
+            if len(desc) >= 59:
+                desc += '...'
+            # try:
+            #     version = entry['version']
+            # except:
+            #     version = '0'
+            #
+            # if len(version) > 8:
+            #     version = version[:8] + '-'
+
+            package_name = entry['code_name']
+
+            # Display text on the right as multiline label
+            text_label = ttk.Label(text_frame, background="#aaa", text=name, font=font.Font(size=12, weight="bold"))
+            text_label.grid(row=0, column=0, sticky="w")
+
+            text_label = ttk.Label(text_frame, background="#aaa", text=desc, foreground="#333")
+            text_label.grid(row=1, column=0, sticky="w")
+
+            button_frame = tk.Frame(box_frame, bg="#aaa")
+            button_frame.grid(row=0, column=2)
+
+            if not utils.is_installed(self.device, package_name):
+
+                button = tk.Button(button_frame, text="Install", bg="#0000ff", fg="#fff", activebackground="#bbb",
+                                   activeforeground="#000", cursor="hand2", highlightthickness=2,
+                                   highlightbackground="#aaa")
+                button.grid(row=0, column=0, padx=5, pady=2)
+
+                button.bind("<Enter>", self.on_install_button_enter)
+                button.bind("<Leave>", self.on_install_button_leave)
+
+                button.config(command=lambda x=entry['apk_name'], button=button, name=entry['code_name']: self.install_button(x, button, name))
+
+            else:
+                button = tk.Button(button_frame, text="Installed", state='disabled', bg='#777')
+                button.grid(row=0, column=0, padx=5, pady=2)
+
+            list1.append([root, photo, entry])
+
+            info_button = tk.Button(button_frame, text="Info", cursor="hand2", bg="#aaa",
+                                    highlightbackground="#aaa",
+                                    command=lambda r=root, p=photo, e=entry: self.create_info_dialog(r, p, e))
+            info_button.grid(row=1, column=0, padx=5, pady=2, ipadx=7)
+
+            # version_label = ttk.Label(button_frame, text=f' v{version}', background='#aaa', foreground="#333")
+            # version_label.grid(row=1, column=0, padx=5, sticky='w')
+
+            # Bind the hover functions to the button
+
+
+
 class AdbManagerApp:
+
+    def open_app_store(self):
+
+        popup = tk.Toplevel(self.root)
+
+        AppStore(popup, self.device)
 
     def update_adb_status(self):
 
@@ -319,13 +499,74 @@ class AdbManagerApp:
         subtab_c = ttk.Frame(sub_tab_control)
         subtab_d = ttk.Frame(sub_tab_control)
         subtab_b = ttk.Frame(sub_tab_control)
+        subtab_e = ttk.Frame(sub_tab_control)
 
         sub_tab_control.add(subtab_a, text="Record")
         self.create_tab_record(subtab_a)
         sub_tab_control.add(subtab_c, text="Message")
         self.create_tab_message(subtab_c)
         sub_tab_control.add(subtab_d, text="Connect Keyboard")
+        sub_tab_control.add(subtab_e, text="Control Device")
+        self.create_tab_scrcpy(subtab_e)
         sub_tab_control.add(subtab_b, text="Credits")
+
+    def create_tab_scrcpy(self, tab):
+
+        # ---WINDOWS---
+
+        if utils.platform == 'windows':
+
+            def execute():
+
+                os.system(f'{utils.platform_scrcpy_extract}\\scrcpy-win64-v2.1.1\\scrcpy')
+
+            def download():
+
+                progress = ttk.Progressbar(tab, orient=tk.HORIZONTAL, length=100, mode='determinate')
+                progress.pack(pady=10)
+
+                progress['value'] = 10
+                root.update_idletasks()
+
+                if not utils.check_scrcpy_install():
+                    print('installing')
+                    with open(utils.platform_scrcpy_zip, 'wb') as f:
+                        f.write(requests.get('https://github.com/Genymobile/scrcpy/releases/download/v2.1.1/scrcpy-win64-v2.1.1.zip').content)
+
+                progress['value'] = 50
+                root.update_idletasks()
+
+                try:
+                    # Open the ZIP file for reading
+                    with zipfile.ZipFile(utils.platform_scrcpy_zip, "r") as zip_ref:
+                        # Extract all the contents to the specified directory
+                        zip_ref.extractall(utils.platform_scrcpy_extract)
+                    # print(f"Successfully extracted files to {extract_path}")
+                except:
+                    messagebox.showerror('Error Extracting File', 'There was an error extracting Scrcpy.')
+
+                button.config(text='Connect Device', command=execute)
+
+                progress['value'] = 100
+                root.update_idletasks()
+
+                progress.destroy()
+                messagebox.showinfo('Scrcpy Installed', 'Scrcpy has been installed. You may now connect to your phone.')
+
+            if utils.check_scrcpy_install():
+
+                button = ttk.Button(tab, text='Connect Device', command=execute)
+                button.pack(pady=10)
+
+            else:
+
+                button = ttk.Button(tab, text='Install Scrcpy', command=download)
+                button.pack(pady=10)
+
+        # ---LINUX---
+
+        label = ttk.Label(tab, text='Hey, Linux is not supported here. Use "sudo apt install scrcpy" to use this.')
+        label.pack(pady=10)
 
     def create_tab_message(self, tab):
 
@@ -541,6 +782,7 @@ class AdbManagerApp:
             self.status_time_boot.config(text=uptime_status)
 
         thread = threading.Thread(target=worker_thread)
+        thread.daemon = True
         thread.start()
 
         # recommended amount. it takes 0.25-0.4 seconds to do the calculation
@@ -549,7 +791,7 @@ class AdbManagerApp:
 
     def create_tab_install(self, tab):
         # Create custom content for the install apps tab
-        open_button = tk.Button(tab, text="Install APK", command=self.open_directory_dialog)
+        open_button = tk.Button(tab, text="Open App Store", bg="#0000ff", fg="#fff", activebackground="#bbb", activeforeground="#000", cursor="hand2", command=self.open_app_store)
         open_button.pack(pady=20)
 
         self.result_label = tk.Label(tab, text="")
@@ -562,6 +804,9 @@ class AdbManagerApp:
         adb_output_widget.insert(tk.END, "\n".join(utils.get_installed_apps(self.device, third_party=True, enabled_only=True)))
         adb_output_widget.config(state='disabled')
         adb_output_widget.pack(padx=10, pady=10)
+
+        open_button = tk.Button(tab, text="Install APK", command=self.open_directory_dialog)
+        open_button.pack(pady=10)
 
         open_button = tk.Button(tab, text="Uninstall app", command=self.uninstall_app_dialog)
         open_button.pack(pady=10)
@@ -846,15 +1091,15 @@ class AdbManagerApp:
 
 
 if __name__ == "__main__":
-    # root = tk.Tk()
-    # app = ConnectionWaiterApp(root)
-    # root.mainloop()
-    #
-    # device_id = app.device_id
-    # should_continue = app.should_continue
+    root = tk.Tk()
+    app = ConnectionWaiterApp(root)
+    root.mainloop()
 
-    should_continue = True
-    device_id = '320525532827'
+    device_id = app.device_id
+    should_continue = app.should_continue
+
+    # should_continue = True
+    # device_id = '320525532827'
 
     if should_continue:
 

@@ -1,3 +1,5 @@
+import json
+import os
 import subprocess
 import requests
 from adbutils._utils import adb_path
@@ -6,9 +8,9 @@ from adbutils import AdbDevice
 import platform
 
 
-platform = platform.system()
+platform = platform.system().lower()
 
-if platform == 'Windows':
+if platform == 'windows':
     v = '\\'
 else:
     v = '/'
@@ -24,15 +26,42 @@ platform_setedit_folder = f'{platform_home_folder}{v}.ethos-group{v}gabb-adb-gui
 platform_desktop_folder = f'{platform_home_folder}{v}Desktop'
 platform_temporary_video_folder = f'{platform_home_folder}{v}Desktop{v}record.mp4'
 
+platform_scrcpy_folder = f'{platform_home_folder}{v}.ethos-group{v}gabb-adb-gui{v}scrcpy'
+platform_scrcpy_zip = f'{platform_scrcpy_folder}{v}{platform}64scrcpy.zip'
+platform_scrcpy_extract = f'{platform_scrcpy_folder}{v}{platform}64scrcpy'
+
+with open('AppStoreApkList.json', 'r') as f:
+    data = json.loads(f.read())
+
 
 existing_apks = {
     'setedit': exists(platform_setedit_folder)
 
 }
 
+for entry in data:
+    existing_apks[entry['apk_name']] = exists(f'{platform_apk_folder}{v}{entry["apk_name"]}.apk')
+
 apks = {
     'setedit': 'https://f-droid.org/repo/io.github.muntashirakon.setedit_8.apk'
 }
+
+for entry in data:
+    apks[entry['apk_name']] = entry['url']
+
+print(existing_apks)
+print(apks)
+
+
+def insert_newlines(input_string, line_length=20):
+    lines = []
+    for i in range(0, len(input_string), line_length):
+        lines.append(input_string[i:i + line_length])
+    return '\n'.join(lines)
+
+
+def check_scrcpy_install():
+    return os.path.exists(platform_scrcpy_zip)
 
 
 def path_fix(path: str, add_quotations: bool = False):
@@ -49,8 +78,10 @@ def download_apk(apk: str):
 
     if (apks[apk] is not None) and not existing_apks[apk]:  # if valid apk and not downloaded
 
-        with open(platform_setedit_folder, 'wb') as f:
+        with open(f'{platform_apk_folder}{v}{apk}.apk', 'wb') as f:
             f.write(requests.get(apks[apk]).content)
+
+    return f'{platform_apk_folder}{v}{apk}.apk'
 
 
 def get_app_info(device: AdbDevice, app: str):
@@ -182,3 +213,17 @@ def toggle_gabb_updates(device: AdbDevice, toggle: bool):
         device.shell('pm enable com.gabb.packageupdater')
     else:
         device.shell('pm disable-user com.gabb.packageupdater')
+
+
+def is_installed(device: AdbDevice, package_name):
+
+    if package_name == '':
+        return False
+
+    return f':{package_name}' in device.shell('pm list packages -3')
+
+
+def install(device: AdbDevice, apk_path, package_name=None):
+    adb(f'install-multiple --user 0 "{apk_path}"')
+    if package_name is not None:
+        device.shell(f'pm enable --user 0 {package_name}')
