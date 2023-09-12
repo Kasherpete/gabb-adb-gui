@@ -21,7 +21,7 @@
   },
   {
     "name": "CPL",
-    "description": "Pixel Launcher is a close to AOSP launcher that only changes the\nnecessary code to allow for small extensions and backporting to older\nAndroid versions. If you want a more feature packed launcher use Nova,\nAction or Lawnchair. Pixel Launcher is focused on simplicity and rock\nsolid stability.\n\nFeatures include:\n\n* Search bar at the bottom\n* Wallpaper based theme selection\n* Regular Icon Packs\n* Adaptive Icon Packs, such as my Google Icons\n* Icon Shape selection on Android 8.0\n\nNOTE: This app allows you to hide apps on the Gabb Phone, it is HIGHLY recommended.",
+    "description": "Pixel Launcher is a close to AOSP launcher that only changes the necessary code to allow for small extensions and backporting to older Android versions. If you want a more feature packed launcher use Nova, Action or Lawnchair. Pixel Launcher is focused on simplicity and rock solid stability.\n\nFeatures include:\n\n* Search bar at the bottom\n* Wallpaper based theme selection\n* Regular Icon Packs\n* Adaptive Icon Packs, such as my Google Icons\n* Icon Shape selection on Android 8.0\n\nNOTE: This app allows you to hide apps on the Gabb Phone, it is HIGHLY recommended.",
     "version": "1.15.1",
     "code_name": "ru.whatau.cpl",
     "apk_name": "cpl",
@@ -32,7 +32,7 @@
   {
     "name": "Google Messages",
     "description": "Messages by Google is the official Google app for messaging over Rich Communication Services (RCS) with fallback to SMS/MMS. Get more done in your messages with one-tap calendar reminders and emoji replies, and keep your conversations secure with spam protection and end-to-end encryption so you can focus on connecting with the people and businesses you care about — no matter what device they use.\n",
-    "version" : "2023.08.01",
+    "version": "2023.08.01",
     "code_name": "com.google.android.apps.messaging",
     "apk_name": "messages",
     "image_path": "./images/messages.png",
@@ -49,7 +49,7 @@
     "url": "https://drive.usercontent.google.com/download?id=1ytRm30PmHvY5jdoP6RogUekTl2CqwDgg&export=download&authuser=0&confirm=t&uuid=a730cc94-cc7a-49a1-a3bf-e706fa665223&at=APZUnTX9jPKOOVJSy9lLth7kfmMq:1694526337272",
     "important": false
   },
-    {
+  {
     "name": "Crossy Road",
     "description": "Join over 200 MILLION players worldwide and experience Hipster Whale's massive viral #1 hit!\n\nSame device multiplayer: Compete against your friends and family on the same device.\n\nPlay Crossy Road on the Big Screen with Android TV!",
     "version": "5.3.1",
@@ -58,5 +58,45 @@
     "image_path": "./images/crossyroad.png",
     "url": "https://drive.usercontent.google.com/download?id=1ytRm30PmHvY5jdoP6RogUekTl2CqwDgg&export=download&authuser=0&confirm=t&uuid=a730cc94-cc7a-49a1-a3bf-e706fa665223&at=APZUnTX9jPKOOVJSy9lLth7kfmMq:1694526337272",
     "important": false
+  },
+  {
+    "name": "Phone",
+    "description": "Google’s official phone calling app is now available to download for the first time. Phone helps you easily connect with family and friends, block spam callers, and know who’s calling before you answer – all with a simple, intuitive design.",
+    "version": "110.0",
+    "code_name": "com.google.android.dialer",
+    "apk_name": "phone",
+    "image_path": "./images/phone.png",
+    "url": "https://drive.usercontent.google.com/download?id=1OZgphMVGHurm0QFf-_wr6iyhGm8sH1Hm&export=download&authuser=0&confirm=t&uuid=4e019181-7907-4f7c-a5bf-422bfd7ab70b&at=APZUnTVwJrUEd4gdVuL-FHsip7-M:1694552166936",
+    "important": false
+  },
+    {
+    "name": "Horizon Chase Turbo",
+    "description": "HORIZON CHASE IS A TRIBUTE TO CLASSIC ARCADE RACING GAMES.\n\nHorizon Chase is a love letter to all retro racing gamers. It's an addictive racing game inspired by the great hits of the 80's and 90's. Each curve and each lap in Horizon Chase recreate classic arcade racing gameplay and offer you unbound speed limits of fun. Full throttle on and enjoy! ",
+    "version": "2.6.5",
+    "code_name": "com.aquiris.horizonchase",
+    "apk_name": "horizonchase",
+    "image_path": "./images/horizonchase.png",
+    "url": "https://drive.usercontent.google.com/download?id=1CiQHrtmPj2FS6ANhERUvw2wV4RiedjUC&export=download&authuser=0&confirm=t&uuid=babe72fa-906f-45a2-ae4e-d452dd4a5700&at=APZUnTWcwFvHD9-g4uGXNsNGDq2e:1694552829811",
+    "important": false
+  },
+      {
+    "name": "GroupMe",
+    "description": "GroupMe - the free, simple way to stay in touch with the people who matter most.\n\nFamily. Roommates. Friends. Coworkers. Teams. Greek Life. Bands. Faith Groups. Events. Vacations.\n\n\n“Lifechanger.... utterly indispensable”\n-Gizmodo\n\n\n- START CHATTING\nAdd anyone to a group via their phone number or email address. If they are new to GroupMe, they can start chatting over SMS immediately.\n\n- CONTROL NOTIFICATIONS\nYou’re in charge! Choose when and what type of notifications you receive. Mute specific chats, or the entire app – you can even leave or end group chats.\n\n- SAY MORE THAN WORDS\nGo ahead – fall in love with our exclusive emoji.\n\n- THE WHOLE INTERNET IN YOUR GROUP\nMeme images, search and send GIFs, and see content shared from URLs displayed in the chat.\n\n- SHARE NOW, RELIVE LATER\nThe gallery saves your memories. Easily explore the photos and videos shared in your group now, or later.\n\n- LEAVE TEXTING BEHIND\nWith direct messages, you can use all the features you love for group chat, but one-on-one. It’s like texting, but better.\n\n- CHAT WHEREVER YOU ARE\nIncluding from your computer at groupme.com\n\nWhether separated by a hallway or a hemisphere, GroupMe allows you to stay in touch with the connections that count. Get your group together.\n\nWe want to hear your feedback!\nWeb: https://aka.ms/groupmesupport\nTwitter: @GroupMe\nFacebook: facebook.com/groupme\nInstagram: @GroupMe\n\nLove,\nTeam GroupMe\n\nNOTE: SMS chat currently available in US only. Standard text messaging rates may apply.\n\nPrivacy Policy: https://groupme.com/privacy\n\nMade with love in Seattle",
+    "version": "6.61.2",
+    "code_name": "com.groupme.android",
+    "apk_name": "groupme",
+    "image_path": "./images/groupme.png",
+    "url": "https://drive.usercontent.google.com/download?id=1MVFA74dzU-iaEc2k20G4mxv7AY1uqfhH&export=download&authuser=0&confirm=t&uuid=e3d8c134-7fe1-46fd-aafd-a13198478e2e&at=APZUnTWBw8-vWapeMsr_CyedPrSO:1694552913437",
+    "important": false
+  },
+        {
+    "name": "FireFox",
+    "description": "Get the browser that prioritizes people over profits\n\nIt’s a new era in tech. Don’t settle for a browser made by unethical, profit-driven, data-hoarding companies. By choosing Firefox, you support the non-profit Mozilla Foundation whose mission is to build a better internet — one that puts individual and public benefit over commercial profit.\n\nWhat Firefox offers:\n\n✔ PRIVACY-FOCUSED BROWSING\n• Automatic tracker blocking — By default, Firefox blocks trackers and scripts such as social media trackers, cross-site cookie trackers, crypto-miners and fingerprinters.\n• Enhanced tracking protection — Choose the “strict” setting and get even more privacy protections.\n• Private browsing mode — When you close private mode, your browsing history is automatically erased from your device.\n\n✔ EASY-TO-USE TABS\n• Find what you want quickly — create as many tabs as you like without losing track.\n• See your open tabs as thumbnails or a list view.\n• See tabs from your phone on your desktop and vice versa — or choose to keep them separate.\n\n✔ PASSWORD MANAGEMENT\n• Log into sites easily — Firefox remembers your passwords across devices.\n• Firefox suggests passwords for new log-ins and stores them securely.\n\n✔ LIGHTNING-FAST PAGE LOADS\n• Enhanced Tracking Protection automatically blocks online trackers from following you around the web and slowing down your pages.\n\n✔ TAILORED SEARCH OPTIONS\n• Get suggestions and previously searched results in the search bar so you can quickly access the sites you visit most.\n• Move the search bar location from the top to the bottom of the screen, making it easier to use with one hand.\n• Use the Firefox search widget to search the web directly from your device’s home screen.\n• See the recent searches you’ve done on other devices for seamless searching across mobile, desktop and more.\n\n✔ CUSTOMIZE YOUR FIREFOX EXPERIENCE\n• Get helpful add-on extensions, including ways to block ads, block certain webpages, turbo-charge privacy settings and more.\n\n✔ FIREFOX HOME SCREEN\n• Access your recent bookmarks, top sites and see popular articles from across the internet, recommended by Pocket, which is part of Mozilla.\n\n✔ SAVE BATTERY WITH DARK MODE\nSwitch to dark mode any time, reducing eye strain and prolonging your battery power.\n\n✔ WATCH VIDEOS WHILE YOU MULTITASK\n• Pop videos out of their webpages or players and pin them to the top of your phone’s screen to watch while you surf the web and do other things.\n\n✔ SHARE ANYTHING IN A FEW TAPS\n• Share links to web pages or specific items on a page with easy, quick access to your most recently used apps.\n\nLEARN MORE ABOUT FIREFOX WEB BROWSER\nRead about Firefox permissions: http://mzl.la/Permissions - Stay in the know: https://blog.mozilla.org\n\nABOUT MOZILLA\nMozilla exists to build the internet as a public resource accessible to all because we believe open and free is better than closed and controlled. We build products like Firefox to promote choice and transparency and give people more control over their lives online. Learn more at https://www.mozilla.org. Privacy policy: http://www.mozilla.org/legal/privacy/firefox.html",
+          "version": "116.2.0",
+    "code_name": "org.mozilla.firefox",
+    "apk_name": "firefox",
+    "image_path": "./images/firefox.png",
+    "url": "https://drive.usercontent.google.com/download?id=1mkRmxG5D9cEWHaLYLtvt8xPtAMC-TCwp&export=download&authuser=0&confirm=t&uuid=8c41adb4-794e-4138-bcf0-994297c0d332&at=APZUnTVatT6f6ZjxUtDbrlJshnRg:1694557431421",
+    "important": true
   }
 ]

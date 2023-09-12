@@ -325,7 +325,7 @@ class AppStore:
             if entry['important']:
                 name = '★ ' + name
 
-            desc = utils.insert_newlines(entry['description'], 30)[:59]
+            desc = utils.insert_newlines(entry['description'].replace('\n', ''), 30)[:59]
             if len(desc) >= 59:
                 desc += '...'
             # try:
