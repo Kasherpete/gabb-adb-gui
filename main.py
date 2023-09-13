@@ -53,6 +53,14 @@ for info in adb.list():
 
 class ConnectionWaiterApp:
 
+    def check(self):
+
+        if self.finished:
+            self.root.destroy()
+
+        else:
+            self.root.after(200, self.check)
+
     def update_adb_status(self):
 
         try:
@@ -71,10 +79,10 @@ class ConnectionWaiterApp:
 
         self.adb_status_label.config(text=f'Status:\n\n{state}')
 
-        self.root.after(500, self.update_adb_status)
+        self.root.after(200, self.update_adb_status)
 
     def show_connected_notification(self):
-        messagebox.showinfo("Phone Connected", "Your Gabb Z2 has been connected!\n\nYou may now close this window.")
+        messagebox.showinfo("Phone Connected", "Your Gabb Z2 has been connected!")
 
     def center_window(self):
         # Get the screen width and height
@@ -88,13 +96,15 @@ class ConnectionWaiterApp:
         # Set the window's initial geometry to center it on the screen
         self.root.geometry(f"{1000}x{600}+{center_x}+{center_y}")
 
-    def __init__(self, root):
+    def __init__(self, root: tk.Tk):
         self.root = root
 
         # Set the initial size of the window
         root.minsize(400, 300)
         root.geometry("1000x600")
         self.center_window()
+        self.finished = False
+        self.root.after(500, self.check)
 
         self.root.title("Eth0s Group's Gabb Phone Z2 Hacker")
         self.server_thread = True
@@ -156,7 +166,6 @@ class ConnectionWaiterApp:
         adb.wait_for(timeout=10000)  # give the poor kids enough time to find their phone charger!
         self.device_id = adb.device_list()[0].serial
         self.status_label.config(text=f"Connection established")
-        self.show_connected_notification()
 
         self.device = adb.device(serial=self.device_id)
 
@@ -172,7 +181,7 @@ class ConnectionWaiterApp:
             self.progress['value'] = 40
             self.root.update_idletasks()
 
-            utils.adb(f'install-multiple {utils.platform_setedit_folder}')
+            utils.adb(f'install-multiple "{utils.platform_setedit_folder}"')
 
             self.progress['value'] = 80
             self.root.update_idletasks()
@@ -181,7 +190,7 @@ class ConnectionWaiterApp:
             self.device.shell('am switch-user 0')  # normal user
             self.device.shell('pm remove-user 10')  # keep this for now. weird errors keep showing up
 
-            messagebox.showinfo("Device Setup", "Please follow these steps:\n\n1. go to to the 'Setedit' app\n\n2. tap the button in the top left, and go to the 'global table'\n\n3. tab 'adb_enabled'\n\n4. type in '1'. CLICK 'OKAY' WHEN YOU ARE DONE.")
+            messagebox.showinfo("Device Setup", "Please follow these steps:\n\n1. go to to the 'Setedit' app\n\n2. tap the button in the top left, and go to the 'global table'\n\n3. tab 'adb_enabled'\n\n4. type in '1'. CLICK 'OKAY' ONLY WHEN YOU ARE DONE.")
 
             if not utils.in_setup_mode(self.device) and adb.list()[0].state == 'device':
                 messagebox.showinfo("Device Setup", "Congrats! You are now ready to start hacking your phone.")
@@ -190,14 +199,15 @@ class ConnectionWaiterApp:
                 utils.setup_device(self.device)
 
             else:
-                messagebox.showinfo("Device Setup", "Oops! You did something wrong. Please exit and try again.")
+                messagebox.showinfo("Device Setup", 'Oops! You did something wrong. Please restart your phone, exit, and try again. Please only press "OKAY" when you finished all the steps.')
 
         else:
             self.should_continue = True
             utils.setup_device(self.device)
 
         #        self.server_thread = False
-        threading.main_thread().join()
+        self.show_connected_notification()
+        self.finished = True
 
 
 class AppStore:
@@ -227,9 +237,16 @@ class AppStore:
         button_frame = tk.Frame(main_frame, bg='#aaa')
         button_frame.grid(row=0, column=1, sticky='n')
 
-        image_label = ttk.Label(title_frame, image=photo)
-        image_label.image = photo
-        image_label.grid(row=0, column=0, padx=5, pady=5)
+        if photo is not None:
+
+            image_label = ttk.Label(title_frame, image=photo)
+            image_label.image = photo
+            image_label.grid(row=0, column=0, padx=5, pady=5)
+
+        else:
+
+            image_label = ttk.Label(title_frame, text="ERROR")
+            image_label.grid(row=0, column=0, padx=5, pady=5)
 
         if not utils.is_installed(self.device, entry['code_name']):
 
@@ -282,6 +299,10 @@ class AppStore:
             button.config(text='Downloading...', state='disabled', bg='#777')
             path = utils.download_apk(app)
 
+            if path is None:
+                messagebox.showerror('Connection Error', f'There was an error downloading {app}. You may be disconnected from the internet.')
+                return
+
             button.config(text='Installing...', state='disabled', bg='#777')
             utils.install(self.device, path, code_name)
 
@@ -308,14 +329,14 @@ class AppStore:
             box_frame = tk.Frame(root, bg="#aaa")
             box_frame.grid(row=row // 3, column=row % 3, padx=10, pady=10)
 
-            # Load image
+            # Load images
             try:
 
-                image = Image.open(entry["image_path"])
-                image = image.resize((50, 50))  # Adjust image size as needed
+                image = Image.open(entry["image_path"])  # TODO: fix Windows path
+                image = image.resize((50, 50))  # Adjust images size as needed
                 photo = ImageTk.PhotoImage(image)
 
-                # Display image on the left
+                # Display images on the left
                 image_label = ttk.Label(box_frame, image=photo)
                 image_label.image = photo
                 image_label.grid(row=0, column=0, padx=5, pady=5)
@@ -323,6 +344,8 @@ class AppStore:
             except FileNotFoundError:
                 image_label = ttk.Label(box_frame, text="ERROR")
                 image_label.grid(row=0, column=0, padx=5, pady=5)
+
+                photo = None
 
             text_frame = tk.Frame(box_frame, bg="#aaa")
             text_frame.grid(row=0, column=1, padx=0, pady=0, sticky="w")
@@ -548,12 +571,24 @@ class AdbManagerApp:
                 return r2
             return None
 
-        scrcpy_path = find_scrcpy_path()._scrcpy_path
+        set_up = False
 
-        if scrcpy_path is not None:
+        try:
 
-            button = ttk.Button(tab, text='Connect Device', command=lambda: os.system(find_scrcpy_path()._scrcpy_path))
-            button.pack(pady=10)
+            scrcpy_path = find_scrcpy_path()._scrcpy_path
+
+            if scrcpy_path is not None:
+
+                button = ttk.Button(tab, text='Connect Device', command=lambda: os.system(find_scrcpy_path()._scrcpy_path))
+                button.pack(pady=10)
+
+            set_up = True
+
+        except:
+            pass
+
+        if set_up:
+            pass
 
         # ---WINDOWS---
 

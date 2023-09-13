@@ -79,7 +79,13 @@ def download_apk(apk: str):
     if (apks[apk] is not None) and not existing_apks[apk]:  # if valid apk and not downloaded
 
         with open(f'{platform_apk_folder}{v}{apk}.apk', 'wb') as f:
-            f.write(requests.get(apks[apk]).content)
+            print(f"Downloading {apk}...")
+            try:
+                f.write(requests.get(apks[apk]).content)
+            except:
+                print(f"An error has occurred while downloading {apk} from {apks[apk]}.")
+                return None
+            print(f"{apk} has been downloaded.")
 
     return f'{platform_apk_folder}{v}{apk}.apk'
 
