@@ -72,20 +72,30 @@ def path_fix(path: str, add_quotations: bool = False):
         return v + path.replace('/', '\\') + v
     else:
         return v + path + v
+
+
+def remove_html_tag(text, tag):
+    return text[:text.find("<"+tag+">")] + text[text.find("</"+tag+">") + len(tag)+3:]
     
 
 def download_apk(apk: str):
 
     if (apks[apk] is not None) and not existing_apks[apk]:  # if valid apk and not downloaded
 
+        print(f"Downloading {apk}...")
+        try:
+            data = requests.get(apks[apk])
+
+            if data.status_code != 200:
+                raise
+        except:
+            print(f"An error has occurred while downloading {apk} from {apks[apk]}.")
+            return None
+
+        print(f"{apk} has been downloaded.")
+
         with open(f'{platform_apk_folder}{v}{apk}.apk', 'wb') as f:
-            print(f"Downloading {apk}...")
-            try:
-                f.write(requests.get(apks[apk]).content)
-            except:
-                print(f"An error has occurred while downloading {apk} from {apks[apk]}.")
-                return None
-            print(f"{apk} has been downloaded.")
+            f.write(data.content)
 
     return f'{platform_apk_folder}{v}{apk}.apk'
 
@@ -101,7 +111,7 @@ def get_running_app(device: AdbDevice):
 def adb(command: str):
     # input something like 'install-multiple [path]'
 
-    proc = subprocess.Popen([f'{adb_path()} {command}'], stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
+    proc = subprocess.Popen(f'{adb_path()} {command}', stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
     (out, err) = proc.communicate()
 
     if out is None:

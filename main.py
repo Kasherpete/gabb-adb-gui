@@ -11,6 +11,7 @@ import os
 import utils
 import threading
 from adbutils._utils import adb_path
+from tkinterhtml import HtmlFrame
 import json
 from PIL import Image, ImageTk
 
@@ -181,7 +182,7 @@ class ConnectionWaiterApp:
             self.progress['value'] = 40
             self.root.update_idletasks()
 
-            utils.adb(f'install-multiple "{utils.platform_setedit_folder}"')
+            utils.adb(f'install-multiple --user 0 "{utils.platform_setedit_folder}"')
 
             self.progress['value'] = 80
             self.root.update_idletasks()
@@ -465,7 +466,7 @@ class AdbManagerApp:
 
             self.result_label.config(text="Installing, please wait...")
             print(f'Executing {directory_path}')
-            os.system(f'{path} install-multiple "{directory_path}"')
+            os.system(f'{path} install-multiple --user 0 "{directory_path}"')
 
             self.result_label.config(text="APK installed!")
 
@@ -541,7 +542,6 @@ class AdbManagerApp:
 
         subtab_a = ttk.Frame(sub_tab_control)
         subtab_c = ttk.Frame(sub_tab_control)
-        subtab_d = ttk.Frame(sub_tab_control)
         subtab_b = ttk.Frame(sub_tab_control)
         subtab_e = ttk.Frame(sub_tab_control)
 
@@ -549,7 +549,6 @@ class AdbManagerApp:
         self.create_tab_record(subtab_a)
         sub_tab_control.add(subtab_c, text="Message")
         self.create_tab_message(subtab_c)
-        sub_tab_control.add(subtab_d, text="Connect Keyboard")
         sub_tab_control.add(subtab_e, text="Control Device")
         self.create_tab_scrcpy(subtab_e)
         sub_tab_control.add(subtab_b, text="Credits")
@@ -579,7 +578,7 @@ class AdbManagerApp:
 
             if scrcpy_path is not None:
 
-                button = ttk.Button(tab, text='Connect Device', command=lambda: os.system(find_scrcpy_path()._scrcpy_path))
+                button = ttk.Button(tab, text='Connect Device', command=lambda: os.system(f'{scrcpy_path} --window-title="Eth0s Group Device Control Program" -V error -t'))
                 button.pack(pady=10)
 
             set_up = True
@@ -986,7 +985,7 @@ class AdbManagerApp:
             if messagebox.askyesno("Uninstallation Confirmation", "Are you sure you want to uninstall these apps? (You can always enable them again later by slecting 'enable apps'.)"):
 
                 for app in selected_items:
-                    self.device.shell(f'pm disable-user {app}')
+                    self.device.shell(f'pm disable-user --user 0 {app}')
                     window.destroy()
 
         yscrollbar = tk.Scrollbar(window)
@@ -1026,7 +1025,7 @@ class AdbManagerApp:
             if messagebox.showinfo("ReInstallation Success", "The apps have been enabled successfully."):
 
                 for app in selected_items:
-                    self.device.shell(f'pm enable {app}')
+                    self.device.shell(f'pm enable --user 0 {app}')
                     window.destroy()
 
         yscrollbar = tk.Scrollbar(window)
@@ -1165,6 +1164,49 @@ class AdbManagerApp:
 
         self.root.after(200, self.check_disconnect_loop)
 
+    def create_tab_help(self, tab):
+
+        sub_tab_control = ttk.Notebook(tab)
+        sub_tab_control.pack(fill="both", expand=True)
+
+        subtab_a = ttk.Frame(sub_tab_control)
+        subtab_b = ttk.Frame(sub_tab_control)
+        sub_tab_control.add(subtab_a, text="GUI Help")
+        sub_tab_control.add(subtab_b, text="General Help (old)")
+
+        try:
+            string = requests.get('https://gabbhackguide.netlify.app')
+
+            if string.status_code == 200:
+                string = utils.remove_html_tag(string.text, 'head')
+            else:
+                print(string.status_code)
+                raise
+        except:
+            with open('data/html1.html', 'r') as f:
+                string = f.read()
+
+        frame = HtmlFrame(subtab_b, horizontal_scrollbar="auto")
+        frame.set_content(string)
+        frame.pack()
+
+        try:
+            string = requests.get('https://gabbhackguide.netlify.app/gui')
+
+            if string.status_code == 200:
+                string = utils.remove_html_tag(string.text, 'head')
+            else:
+                print(string.status_code)
+                raise
+        except:
+            with open('data/html1.html', 'r') as f:
+                string = f.read()
+
+        frame = HtmlFrame(subtab_a, horizontal_scrollbar="auto")
+        frame.set_content(string)
+        frame.pack()
+
+
     def __init__(self, root: tk.Tk, device_id):
         self.root = root
         root.minsize(400, 300)
@@ -1237,6 +1279,7 @@ class AdbManagerApp:
 
         tab1 = ttk.Frame(main_tab_control)
         main_tab_control.add(tab1, text="Help")
+        self.create_tab_help(tab1)
 
         # print(utils.in_setup_mode(self.device))
 
