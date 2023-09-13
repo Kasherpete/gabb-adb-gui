@@ -303,19 +303,26 @@ class AppStore:
         # Create a function to generate boxes
 
         for row, entry in enumerate(data):
-            # Load image
-            image = Image.open(entry["image_path"])
-            image = image.resize((50, 50))  # Adjust image size as needed
-            photo = ImageTk.PhotoImage(image)
 
             # Create a frame for each box
             box_frame = tk.Frame(root, bg="#aaa")
             box_frame.grid(row=row // 3, column=row % 3, padx=10, pady=10)
 
-            # Display image on the left
-            image_label = ttk.Label(box_frame, image=photo)
-            image_label.image = photo
-            image_label.grid(row=0, column=0, padx=5, pady=5)
+            # Load image
+            try:
+
+                image = Image.open(entry["image_path"])
+                image = image.resize((50, 50))  # Adjust image size as needed
+                photo = ImageTk.PhotoImage(image)
+
+                # Display image on the left
+                image_label = ttk.Label(box_frame, image=photo)
+                image_label.image = photo
+                image_label.grid(row=0, column=0, padx=5, pady=5)
+
+            except FileNotFoundError:
+                image_label = ttk.Label(box_frame, text="ERROR")
+                image_label.grid(row=0, column=0, padx=5, pady=5)
 
             text_frame = tk.Frame(box_frame, bg="#aaa")
             text_frame.grid(row=0, column=1, padx=0, pady=0, sticky="w")
@@ -526,9 +533,31 @@ class AdbManagerApp:
 
     def create_tab_scrcpy(self, tab):
 
+        # ---UNIVERSAL---
+
+        def find_scrcpy_path():
+            if self.device._record_client:
+                return self.device._record_client
+            r1 = adbutils._device._ScrcpyScreenRecord(self.device)
+            if r1.check_env():
+                self.device._record_client = r1
+                return r1
+            r2 = adbutils._device._AdbScreenRecord(self.device)
+            if r2.check_env():
+                self.device._record_client = r2
+                return r2
+            return None
+
+        scrcpy_path = find_scrcpy_path()._scrcpy_path
+
+        if scrcpy_path is not None:
+
+            button = ttk.Button(tab, text='Connect Device', command=lambda: os.system(find_scrcpy_path()._scrcpy_path))
+            button.pack(pady=10)
+
         # ---WINDOWS---
 
-        if utils.platform == 'windows':
+        elif utils.platform == 'windows':
 
             def execute():
 
@@ -578,9 +607,35 @@ class AdbManagerApp:
                 button.pack(pady=10)
 
         # ---LINUX---
+        elif utils.platform == 'linux':
+            label = ttk.Label(tab, text='Use "sudo apt install scrcpy" to use this first.')
+            label.pack(pady=10)
 
-        label = ttk.Label(tab, text='Hey, Linux is not supported here. Use "sudo apt install scrcpy" to use this.')
-        label.pack(pady=10)
+        elif utils.platform == 'darwin':
+
+            def target():
+
+                button.config(text='Downloading Homebrew...', state='disabled')
+                os.system('/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"')
+
+                button.config(text='Installing Scrcpy...')
+                os.system('brew install scrcpy')
+
+                button.config(text='Done', state='disabled')
+                messagebox.showinfo('MacOS Scrcpy Installation', 'The app will now close. Please reopen the app to update.')
+
+            def download():
+
+                thread = threading.Thread(target=target)
+                thread.daemon = True
+                thread.start()
+
+            button = ttk.Button(tab, text='Install Scrcpy', command=download)
+            button.pack(pady=10)
+
+        else:
+            label = ttk.Label(tab, text='Could not recognize Operating System. Please install the scrcpy binary.')
+            label.pack(pady=10)
 
     def create_tab_message(self, tab):
 
@@ -599,16 +654,22 @@ class AdbManagerApp:
             self.device.shell(f'service call isms 7 i32 0 s16 "com.android.mms.service" s16 "{number}" s16 "null" s16 "{message}" s16 "null" s16 "null"')
 
         def read_text_boxes():
-            number = entry_x.get("1.0", "end-1c")  # Get content of text box 1
-            message = entry_y.get("1.0", "end-1c")  # Get content of text box 2
 
-            # result_label.config(text=f"Text Box 1: {text_box1_content}\nText Box 2: {text_box2_content}")
-            if (number is not None) and (number != '') and (number != 'Phone number') and (message is not None) and (message != '') and (message != 'Phone number'):
-                send_message(number, message)
+            def target():
+                number = entry_x.get("1.0", "end-1c")  # Get content of text box 1
+                message = entry_y.get("1.0", "end-1c")  # Get content of text box 2
 
-                result_label.config(text=f"Message to '{number}' sent!")
-            else:
-                result_label.config(text="Oops! Please include a phone number to send to and a message to send to them.")
+                # result_label.config(text=f"Text Box 1: {text_box1_content}\nText Box 2: {text_box2_content}")
+                if (number is not None) and (number != '') and (number != 'Phone number') and (message is not None) and (message != '') and (message != 'Phone number'):
+                    send_message(number, message)
+
+                    result_label.config(text=f"Message to '{number}' sent!")
+                else:
+                    result_label.config(text="Oops! Please include a phone number to send to and a message to send to them.")
+
+            thread = threading.Thread(target=target)
+            thread.daemon = True
+            thread.start()
 
         # Create text boxes with different sizes
         entry_x = tk.Text(tab, height=1, width=13)
@@ -644,7 +705,6 @@ class AdbManagerApp:
         result_label = tk.Label(tab, text="")
         result_label.pack()
 
-
     def create_tab_record(self, tab):
 
         # def worker_thread():
@@ -652,14 +712,16 @@ class AdbManagerApp:
 
         def stop_recording():
             # self.device.shell('\x03')
+            start_button.config(text="Saving...", state="disabled")
+            self.root.update_idletasks()
             self.device.stop_recording()
 
-            start_button.config(text="Start Recording")
-            start_button.config(command=start_recording)
+            start_button.config(text="Start Recording", command=start_recording, state="active")
 
-            file = filedialog.asksaveasfile(title='Save file', filetypes=[('Video', 'mp4')], initialfile='record.mp4').name
+            file = filedialog.asksaveasfile(title='Save file', filetypes=[('Video', 'mp4')], initialfile='record.mp4', initialdir=utils.platform_desktop_folder)
 
-            os.rename(utils.platform_temporary_video_folder, file)
+            if file is not None:
+                os.rename(utils.platform_temporary_video_folder, file.name)
 
         def start_recording():
             # thread = threading.Thread(target=worker_thread)
@@ -671,7 +733,18 @@ class AdbManagerApp:
             start_button.config(command=stop_recording)
 
         def screenshot():
-            self.device.screenshot().save(fp=filedialog.asksaveasfile(title='Save file', filetypes=[('Picture', 'png')], initialfile='record.png').name)
+
+            button.config(text="Processing...", state="disabled")
+            self.root.update_idletasks()
+
+            image = self.device.screenshot()
+
+            button.config(text="Screenshot", state="active")
+
+            file_path = filedialog.asksaveasfile(title='Save file', filetypes=[('Picture', 'png')], initialfile='record.png', initialdir=utils.platform_desktop_folder)
+
+            if file_path is not None:
+                image.save(fp=file_path.name)
 
         label = ttk.Label(tab, text="")
         label.pack(pady=10)
@@ -688,8 +761,8 @@ class AdbManagerApp:
         label = ttk.Label(tab, text="Screenshot")
         label.pack()
 
-        start_button = tk.Button(tab, text="Screenshot", command=screenshot)
-        start_button.pack(pady=20)
+        button = tk.Button(tab, text="Screenshot", command=screenshot)
+        button.pack(pady=20)
 
     def create_tab_status(self, tab):
 
@@ -697,13 +770,31 @@ class AdbManagerApp:
         # button.pack()
 
         def power_off():
-            self.device.shell('reboot -p')
+
+            def target():
+                button1.config(text="Shutting Down...", state="disabled")
+                self.device.shell('reboot -p')
+                button1.config(text="Turn Off Device Device", state="active")
+
+            thread = threading.Thread(target=target)
+            thread.daemon = True
+            thread.start()
 
         def reboot():
-            self.device.shell('reboot')
+
+            def target():
+                button2.config(text="Rebooting...", state="disabled")
+                self.device.shell('reboot')
+                button2.config(text="Reboot Device", state="active")
+
+            thread = threading.Thread(target=target)
+            thread.daemon = True
+            thread.start()
 
         def toggle_screen():
-            self.device.shell('input keyevent KEYCODE_POWER')
+            thread = threading.Thread(target=self.device.shell, args=('input keyevent KEYCODE_POWER',))
+            thread.daemon = True
+            thread.start()
 
         frame = tk.Frame(tab, pady=20)
         frame.pack()
@@ -715,8 +806,8 @@ class AdbManagerApp:
         button2 = tk.Button(frame, text="Reboot Device", command=reboot)
         button2.pack(side="left", padx=10)
 
-        button2 = tk.Button(frame, text="Toggle Screen", command=toggle_screen)
-        button2.pack(side="left", padx=10)
+        button3 = tk.Button(frame, text="Toggle Screen", command=toggle_screen)
+        button3.pack(side="left", padx=10)
 
         frame = ttk.Frame(tab)
         frame.pack(pady=10)
@@ -805,8 +896,27 @@ class AdbManagerApp:
 
     def create_tab_install(self, tab):
         # Create custom content for the install apps tab
-        open_button = tk.Button(tab, text="Open App Store", bg="#0000ff", fg="#fff", activebackground="#bbb", activeforeground="#000", cursor="hand2", command=self.open_app_store)
+
+        # def target():
+        #     print(1)
+        #     self.open_app_store()
+        #     print(2)
+
+        def execute():
+
+            # thread = threading.Thread(target=target)
+            # thread.daemon = True
+            open_button.config(text='Opening App Store...', state='disabled', bg='#777', cursor="hand1")
+            self.root.update_idletasks()
+            self.open_app_store()
+            open_button.config(text="Open App Store", bg="#0000ff", fg="#fff", activebackground="#bbb", activeforeground="#000", cursor="hand2", state="active")
+            # thread.start()
+            # thread.join()
+
+        open_button = tk.Button(tab, text="Open App Store", bg="#0000ff", fg="#fff", activebackground="#bbb", activeforeground="#000", cursor="hand2")
         open_button.pack(pady=20)
+
+        open_button.config(command=execute)
 
         self.result_label = tk.Label(tab, text="")
         self.result_label.pack()
@@ -819,14 +929,14 @@ class AdbManagerApp:
         adb_output_widget.config(state='disabled')
         adb_output_widget.pack(padx=10, pady=10)
 
-        open_button = tk.Button(tab, text="Install APK", command=self.open_directory_dialog)
-        open_button.pack(pady=10)
+        button = tk.Button(tab, text="Install APK", command=self.open_directory_dialog)
+        button.pack(pady=10)
 
-        open_button = tk.Button(tab, text="Uninstall app", command=self.uninstall_app_dialog)
-        open_button.pack(pady=10)
+        button = tk.Button(tab, text="Uninstall App", command=self.uninstall_app_dialog)
+        button.pack(pady=10)
 
-        open_button = tk.Button(tab, text="Enable apps", command=self.enable_app_dialog)
-        open_button.pack(pady=7)
+        button = tk.Button(tab, text="Enable Apps", command=self.enable_app_dialog)
+        button.pack(pady=7)
 
     def uninstall_app_dialog(self):
 

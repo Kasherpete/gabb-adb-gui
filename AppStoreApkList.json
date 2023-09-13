@@ -98,5 +98,55 @@
     "image_path": "./images/firefox.png",
     "url": "https://drive.usercontent.google.com/download?id=1mkRmxG5D9cEWHaLYLtvt8xPtAMC-TCwp&export=download&authuser=0&confirm=t&uuid=8c41adb4-794e-4138-bcf0-994297c0d332&at=APZUnTVatT6f6ZjxUtDbrlJshnRg:1694557431421",
     "important": true
+  },
+  {
+    "name": "Discord",
+    "description": "Imagine a place...where you can belong to a school club, a gaming group, or a worldwide art community. Where just you and a handful of friends can spend time together. A place that makes it easy to talk every day and hang out more often.",
+    "version": "194.17",
+    "code_name": "com.discord",
+    "apk_name": "discord",
+    "image_path": "./images/discord.png",
+    "url": "https://d.apkpure.com/b/APK/com.discord?version=latest",
+    "important": false
+  },
+  {
+    "name": "Outlook",
+    "description": "Connect and coordinate your busy life with Microsoft Outlook . Stay on top of your day through a secure email and calendar app that lets you manage your emails, files and calendar all in one place. Stay productive with whatever hits your inbox, whether it's from your work, school or your personal account. Organize your email intelligently, filtered into Focused and Other so you can easily see your most important messages. Keep your day organized by seeing multiple calendars at a glance. Outlook is free for personal use. You can connect your various accounts, like Microsoft Exchange, Microsoft 365, Outlook.com, Gmail, Yahoo Mail, iCloud and IMAP, giving you flexibility to stay connected on the go. Write polished, professional-quality emails with built-in intelligent editing tools for real-time typing suggestions, grammar, and spelling help. Send documents, photos, or video from your Files list, OneDrive, or your Gallery. Open Word, Excel, and PowerPoint documents right from your inbox. Cut through daily noise and remove clutter with swipe gestures to delete, archive, snooze, or move to folders quickly., Flag important messages for follow-up or pin them to the top of your inbox. Listen to what’s new in your inbox, and find what you need with Search with a tap or your voice. Stay protected from phishing and spam with Outlook’s enterprise-grade security. Connect with Teams, Skype, Zoom, or other video calling providers for any meeting on the go. If it’s important, manage it with Microsoft Outlook.",
+    "version": "4.2334.0",
+    "code_name": "com.microsoft.office.outlook",
+    "apk_name": "outlook",
+    "image_path": "./images/outlook.png",
+    "url": "https://d.apkpure.com/b/APK/com.microsoft.office.outlook?version=latest",
+    "important": false
+  },
+  {
+    "name": "Spotify",
+    "description": "With the Spotify music and podcast app, you can play millions of songs, albums and original podcasts for free. We have even added audiobooks, so you can enjoy thousands of stories wherever you are! Stream music and podcasts, listen to audiobooks, discover albums, playlists or even single songs for free on your mobile or tablet. Subscribe to Spotify Premium to download and listen offline wherever you are. Spotify gives you access to a world of free music, curated playlists, artists, and podcasts you love. Discover podcasts, new music, top songs or listen to your favorite artists and albums.",
+    "version": "8.8.68.565",
+    "code_name": "com.spotify.music",
+    "apk_name": "spotify",
+    "image_path": "./images/spotify.png",
+    "url": "https://d.apkpure.com/b/APK/com.spotify.music?version=latest",
+    "important": false
+  },
+  {
+    "name": "Remind",
+    "description": "Remind is a communication platform that helps every student succeed. Whether you're in the classroom, at home, or anywhere in between, Remind makes it easy to stay connected to your school community.",
+    "version": "14.18.2",
+    "code_name": "com.remind101",
+    "apk_name": "remind",
+    "image_path": "./images/remind.png",
+    "url": "https://drive.usercontent.google.com/download?id=1mCEMgRYEP8ApaK82JcdaDF0KAGpL0q33&export=download&authuser=0&confirm=t&uuid=4d33d30a-9921-4726-8bbb-bd823c13fc99&at=APZUnTVFehSr-zitxc6WXgCw1ddW:1694625689707",
+    "important": false
+  },
+  {
+    "name": "Retroarch",
+    "description": "RetroArch is an open-source project that makes use of a powerful development interface called Libretro. Libretro is an interface that allows you to make cross-platform applications that can use rich features such as OpenGL, cross-platform camera support, location support, and more in the future.",
+    "version": "1.9.12",
+    "code_name": "com.retroarch",
+    "apk_name": "retroarch",
+    "image_path": "./images/retroarch.png",
+    "url": "https://d.apkpure.com/b/APK/com.retroarch?version=latest",
+    "important": false
   }
 ]
