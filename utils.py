@@ -30,7 +30,7 @@ platform_scrcpy_folder = f'{platform_home_folder}{v}.ethos-group{v}gabb-adb-gui{
 platform_scrcpy_zip = f'{platform_scrcpy_folder}{v}{platform}64scrcpy.zip'
 platform_scrcpy_extract = f'{platform_scrcpy_folder}{v}{platform}64scrcpy'
 
-with open('AppStoreApkList.json', 'r') as f:
+with open('AppStoreApkList.json', 'r', encoding='utf-8') as f:
     data = json.loads(f.read())
 
 

@@ -315,7 +315,7 @@ class AppStore:
 
     def __init__(self, root: tk.Toplevel, device: adbutils.AdbDevice):
 
-        data = json.loads(open('AppStoreApkList.json', 'r').read())
+        data = json.loads(open('AppStoreApkList.json', 'r', encoding='utf-8').read())
         self.device = device
 
         # Create the main window
@@ -1183,7 +1183,7 @@ class AdbManagerApp:
                 print(string.status_code)
                 raise
         except:
-            with open('data/html1.html', 'r') as f:
+            with open('data/html1.html', 'r', encoding='utf-8') as f:
                 string = f.read()
 
         frame = HtmlFrame(subtab_b, horizontal_scrollbar="auto")
@@ -1199,7 +1199,7 @@ class AdbManagerApp:
                 print(string.status_code)
                 raise
         except:
-            with open('data/html1.html', 'r') as f:
+            with open('data/html1.html', 'r', encoding='utf-8') as f:
                 string = f.read()
 
         frame = HtmlFrame(subtab_a, horizontal_scrollbar="auto")
