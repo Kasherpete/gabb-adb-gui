@@ -4,11 +4,12 @@ import subprocess
 import requests
 from adbutils._utils import adb_path
 from os.path import expanduser, exists
+from tkinter import messagebox
 from adbutils import AdbDevice
-import platform
+import platform as pt
 
 
-platform = platform.system().lower()
+platform = pt.system().lower()
 
 if platform == 'windows':
     v = '\\'
@@ -53,6 +54,10 @@ print(existing_apks)
 print(apks)
 
 
+def get_python_version():
+    return pt.python_version_tuple()
+
+
 def insert_newlines(input_string, line_length=20):
     lines = []
     for i in range(0, len(input_string), line_length):
@@ -68,7 +73,7 @@ def path_fix(path: str, add_quotations: bool = False):
     v = ''
     if add_quotations:
         v = '"'
-    if platform.system() == 'Windows':
+    if pt.system() == 'Windows':
         return v + path.replace('/', '\\') + v
     else:
         return v + path + v
@@ -111,7 +116,13 @@ def get_running_app(device: AdbDevice):
 def adb(command: str):
     # input something like 'install-multiple [path]'
 
-    proc = subprocess.Popen(f'{adb_path()} {command}', stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
+    try:
+        adb_pat = adb_path()
+    except RuntimeError:
+        messagebox.showerror('ADB Not Installed', 'ADB is not installed! Please refer to the online guide for help on installing it.')
+        return
+
+    proc = subprocess.Popen(f'{adb_pat} {command}', stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
     (out, err) = proc.communicate()
 
     if out is None:
@@ -213,6 +224,7 @@ def setup_device(device: AdbDevice):
     device.shell('pm disable-user com.zte.zdmdaemon')
     device.shell('pm grant io.github.muntashirakon.setedit android.permission.WRITE_SECURE_SETTINGS')
     device.shell('settings put global development_settings_enabled 1')
+    device.shell('settings put global adb_enabled 1')
 
 
 def toggle_system_updates(device: AdbDevice, toggle: bool):

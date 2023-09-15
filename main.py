@@ -1,3 +1,4 @@
+import time
 import tkinter as tk
 import zipfile
 from tkinter import messagebox
@@ -10,7 +11,6 @@ from adbutils import errors
 import os
 import utils
 import threading
-from adbutils._utils import adb_path
 from tkinterhtml import HtmlFrame
 import json
 from PIL import Image, ImageTk
@@ -73,7 +73,7 @@ class ConnectionWaiterApp:
             state = 'Disconnected'
 
         if 'no permission' in state:
-            state = 'Please accept file transfer on your phone'
+            state = 'Please unplug and replug your phone in, and accept the info message.'
 
         if 'unauthorized' in state:
             state = 'Please disconnect your phone and try again.'
@@ -133,7 +133,7 @@ class ConnectionWaiterApp:
         self.start_button = tk.Button(root, text="Connect", command=self.start_waiting)
         self.start_button.pack()
 
-        self.adb_status_label = tk.Label(root, text="")
+        self.adb_status_label = tk.Label(root, text="", font=font.Font(size=16, weight="bold"))
         self.adb_status_label.pack(pady=20)
 
         self.setup_message = tk.Label(root, text="")
@@ -172,35 +172,15 @@ class ConnectionWaiterApp:
 
         if utils.in_setup_mode(self.device) and messagebox.askyesno("Device Setup","The device is not set up! Would you like to set it up now? (If you click \"no\", you cannot continue.)"):
 
-            self.progress.pack(pady=10)
-
-            self.progress['value'] = 10
-            self.root.update_idletasks()
-
-            utils.download_apk('setedit')
-
-            self.progress['value'] = 40
-            self.root.update_idletasks()
-
-            utils.adb(f'install-multiple --user 0 "{utils.platform_setedit_folder}"')
-
-            self.progress['value'] = 80
-            self.root.update_idletasks()
-
-            self.device.shell('adb shell pm grant io.github.muntashirakon.setedit android.permission.WRITE_SECURE_SETTINGS')
+            self.device.shell('settings put global adb_enabled 1')
+            self.device.shell('pm remove-user 10')  # maintenance mode user
             self.device.shell('am switch-user 0')  # normal user
-            self.device.shell('pm remove-user 10')  # keep this for now. weird errors keep showing up
 
-            messagebox.showinfo("Device Setup", "Please follow these steps:\n\n1. go to to the 'Setedit' app\n\n2. tap the button in the top left, and go to the 'global table'\n\n3. tab 'adb_enabled'\n\n4. type in '1'. CLICK 'OKAY' ONLY WHEN YOU ARE DONE.")
+            messagebox.showinfo('Device Setup Wizard', 'Your device has been set up! You are now ready to start hacking your phone.')
+            time.sleep(2)
+            messagebox.showinfo('Device Setup Wizard',  'Please unplug your phone and launch this program again.')
 
-            if not utils.in_setup_mode(self.device) and adb.list()[0].state == 'device':
-                messagebox.showinfo("Device Setup", "Congrats! You are now ready to start hacking your phone.")
-
-                self.should_continue = True
-                utils.setup_device(self.device)
-
-            else:
-                messagebox.showinfo("Device Setup", 'Oops! You did something wrong. Please restart your phone, exit, and try again. Please only press "OKAY" when you finished all the steps.')
+            self.should_continue = False
 
         else:
             self.should_continue = True
@@ -462,11 +442,10 @@ class AdbManagerApp:
         # self.device.adb_output(f'install-multiple {directory_path}')
         
         try:
-            path = adb_path()
 
             self.result_label.config(text="Installing, please wait...")
             print(f'Executing {directory_path}')
-            os.system(f'{path} install-multiple --user 0 "{directory_path}"')
+            utils.install(self.device, directory_path)
 
             self.result_label.config(text="APK installed!")
 
@@ -1174,37 +1153,39 @@ class AdbManagerApp:
         sub_tab_control.add(subtab_a, text="GUI Help")
         sub_tab_control.add(subtab_b, text="General Help (old)")
 
-        try:
-            string = requests.get('https://gabbhackguide.netlify.app')
+        if utils.get_python_version()[1] >= '10':
 
-            if string.status_code == 200:
-                string = utils.remove_html_tag(string.text, 'head')
-            else:
-                print(string.status_code)
-                raise
-        except:
-            with open('data/html1.html', 'r', encoding='utf-8') as f:
-                string = f.read()
+            try:
+                string = requests.get('https://gabbhackguide.netlify.app')
 
-        frame = HtmlFrame(subtab_b, horizontal_scrollbar="auto")
-        frame.set_content(string)
-        frame.pack()
+                if string.status_code == 200:
+                    string = utils.remove_html_tag(string.text, 'head')
+                else:
+                    print(string.status_code)
+                    raise
+            except:
+                with open('data/html1.html', 'r', encoding='utf-8') as f:
+                    string = f.read()
 
-        try:
-            string = requests.get('https://gabbhackguide.netlify.app/gui')
+            frame = HtmlFrame(subtab_b, horizontal_scrollbar="auto")
+            frame.set_content(string)
+            frame.pack()
 
-            if string.status_code == 200:
-                string = utils.remove_html_tag(string.text, 'head')
-            else:
-                print(string.status_code)
-                raise
-        except:
-            with open('data/html1.html', 'r', encoding='utf-8') as f:
-                string = f.read()
+            try:
+                string = requests.get('https://gabbhackguide.netlify.app/gui')
 
-        frame = HtmlFrame(subtab_a, horizontal_scrollbar="auto")
-        frame.set_content(string)
-        frame.pack()
+                if string.status_code == 200:
+                    string = utils.remove_html_tag(string.text, 'head')
+                else:
+                    print(string.status_code)
+                    raise
+            except:
+                with open('data/html1.html', 'r', encoding='utf-8') as f:
+                    string = f.read()
+
+            frame = HtmlFrame(subtab_a, horizontal_scrollbar="auto")
+            frame.set_content(string)
+            frame.pack()
 
 
     def __init__(self, root: tk.Tk, device_id):
@@ -1279,7 +1260,7 @@ class AdbManagerApp:
 
         tab1 = ttk.Frame(main_tab_control)
         main_tab_control.add(tab1, text="Help")
-        self.create_tab_help(tab1)
+        self.create_tab_help(tab1)  # this takes a longgg time to do. not sure whether to delete or not
 
         # print(utils.in_setup_mode(self.device))
 
