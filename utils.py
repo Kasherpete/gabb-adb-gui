@@ -20,7 +20,7 @@ platform_home_folder = expanduser('~')
 print(platform_home_folder)
 platform_downloads_folder = f'{platform_home_folder}{v}Downloads'
 platform_ethos_folder = f'{platform_home_folder}{v}.ethos-group'
-platform_main_folder = f'{platform_home_folder}{v}.ethos-groups{v}gabb-adb-gui'
+platform_main_folder = f'{platform_home_folder}{v}.ethos-group{v}gabb-adb-gui'
 platform_logs_folder = f'{platform_home_folder}{v}.ethos-group{v}gabb-adb-gui{v}logs'
 platform_apk_folder = f'{platform_home_folder}{v}.ethos-group{v}gabb-adb-gui{v}apk'
 platform_setedit_folder = f'{platform_home_folder}{v}.ethos-group{v}gabb-adb-gui{v}apk{v}setedit.apk'
