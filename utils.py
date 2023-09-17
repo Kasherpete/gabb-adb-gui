@@ -16,7 +16,7 @@ if platform == 'windows':
 else:
     v = '/'
 
-if platform == 'darwin';
+if platform == 'darwin':
     d = '.'
 else:
     d = ''
