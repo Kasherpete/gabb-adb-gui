@@ -19,30 +19,9 @@ from PIL import Image, ImageTk
 print(utils.platform)
 
 # create a folder for this. Please find another method for this code
-try:
-    os.mkdir(utils.platform_ethos_folder)
-except:
-    pass
-try:
-    os.mkdir(utils.platform_main_folder)
-except:
-    pass
-try:
-    os.mkdir(utils.platform_logs_folder)
-except:
-    pass
-try:
-    os.mkdir(utils.platform_apk_folder)
-except:
-    pass
-try:
-    os.mkdir(utils.platform_scrcpy_folder)
-except:
-    pass
-try:
-    os.mkdir(utils.platform_scrcpy_extract)
-except:
-    pass
+for i in utils.create_folders:
+    if not os.path.exists(i):
+        os.mkdir(i)
 
 
 # set up client
