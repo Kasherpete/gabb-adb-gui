@@ -36,6 +36,8 @@ platform_scrcpy_folder = f'{platform_home_folder}{v}{d}ethos-group{v}gabb-adb-gu
 platform_scrcpy_zip = f'{platform_scrcpy_folder}{v}{platform}64scrcpy.zip'
 platform_scrcpy_extract = f'{platform_scrcpy_folder}{v}{platform}64scrcpy'
 
+create_folders = [platform_ethos_folder, platform_main_folder, platform_logs_folder, platform_apk_folder, platform_scrcpy_folder, platform_scrcpy_extract]
+
 with open('AppStoreApkList.json', 'r', encoding='utf-8') as f:
     data = json.loads(f.read())
 
