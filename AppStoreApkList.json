@@ -165,7 +165,7 @@
     "version": "4.4.1",
     "code_name": "com.aurora.store",
     "apk_name": "aurora",
-    "image_path": "./images/aurora.png",
+    "image_path": "./images/aurora.jpg",
     "url": "https://auroraoss.com/AuroraStore/Stable/AuroraStore-4.4.1.apk",
     "important": true
   },
