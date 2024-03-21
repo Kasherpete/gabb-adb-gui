@@ -47,7 +47,7 @@ except:
 
 # set up client
 
-adb = adbutils.AdbClient(host='127.0.0.1', port=5037)
+adb = adbutils.AdbClient()
 for info in adb.list():
     print(info.serial, info.state)
 
