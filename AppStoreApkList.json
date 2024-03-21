@@ -148,5 +148,45 @@
     "image_path": "./images/retroarch.png",
     "url": "https://d.apkpure.com/b/APK/com.retroarch?version=latest",
     "important": false
-  }
+  },
+  {
+    "name": "Shizuku",
+    "description": "Shizuku is an application designed to provide normal applications access to system APIs with ADB privileges, this can be used to install applications using apps like Aurora Store.",
+    "version": "13.5.4",
+    "code_name": "moe.shizuku.privileged.api",
+    "apk_name": "shizuku",
+    "image_path": "./images/shizuku.png",
+    "url": "https://github.com/RikkaApps/Shizuku/releases/download/v13.5.4/shizuku-v13.5.4.r1049.0e53409-release.apk",
+    "important": true
+  },
+  {
+    "name": "Aurora Store",
+    "description": "Aurora Store is an unofficial, FOSS client to Google Play with an elegant design. Aurora Store allows users to download, update, and search for apps like the Play Store.",
+    "version": "4.4.1",
+    "code_name": "com.aurora.store",
+    "apk_name": "aurora",
+    "image_path": "./images/aurora.png",
+    "url": "https://auroraoss.com/AuroraStore/Stable/AuroraStore-4.4.1.apk",
+    "important": true
+  },
+  {
+    "name": "F-Droid",
+    "description": "F-Droid is an installable catalogue of libre software apps for Android. The F-Droid client app makes it easy to browse, install, and keep track of updates on your device.",
+    "version": "1.19.2",
+    "code_name": "org.fdroid.fdroid",
+    "apk_name": "fdroid",
+    "image_path": "./images/fdroid.png",
+    "url": "https://f-droid.org/F-Droid.apk",
+    "important": true
+  },
+  {
+    "name": "Droidify",
+    "description": "F-Droid client with Material UI.",
+    "version": "0.6.1",
+    "code_name": "com.looker.droidify",
+    "apk_name": "droidify",
+    "image_path": "./images/droidify.png",
+    "url": "https://github.com/Droid-ify/client/releases/download/v0.6.1/app-release.apk",
+    "important": true
+  },
 ]
